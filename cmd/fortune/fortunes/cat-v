@@ -1,0 +1,756 @@
+public class StubFactoryFactoryProxyImpl extends StubFactoryFactoryDynamicBase //
+Seen in the source of Sun's JDK.
+%
+// WARNING: STATS_COUNTER_LIST_* is a very large macro that is causing MSVC
+// Intellisense to crash.  It was broken into two macros (each of length 40
+// lines) rather than one macro (of length about 80 lines) to work around
+// this problem.  Please avoid using recursive macros of this length when
+// possible.
+// http://code.google.com/p/v8/source/browse/trunk/src/v8-counters.h#58
+%
+The guys who invented autoconf/automake/configure/libtool must have been drug
+addicts.  -- Garbeam
+%
+<anothy_x> it always seems bizarre to me when people are doing anything
+new-ish in asn.1.  i expect to documentation to be written in old english or norse
+runes or something.
+%
+A futurist is just an early revisionist.  -- Tim Newsham
+%
+Dis code doesnt fuck arround -- cinap_lenrek
+%
+ssh, the emacs of network protocols
+%
+FIST-philosophy: Fuck It Sucks Terribly -- n0nsense speaking about dbus in
+#suckless
+%
+people who wear clever computing shirts are the opposite of samurais -- Capso
+%
+CL's loop is so powerful that people invented functional programming so that
+they'd never have to use it.  -- G_Morgan
+%
+Ruby on Rails, the PHP of a new generation.  -- beefhooked
+%
+You should use an in-memory SQL database!  It's the answer to all data structure
+questions.  -- Ian Lance Taylor
+%
+every time i look at main.go, i get hungry -- dho
+%
+you throw humans into lions?  Wouldn't that anger animal rights evangelists?
+Don't you have to cook the humans first?  -- 20h
+%
+Dr. Strange Love: How I Learned to Stop Being a Fag and Love the Clit -- Capso
+%
+gentoo|gen-poo| noun - 1.  The sport of hitting compiler bugs.
+%
+op-ti-mize [verb (trans.)]* ...  (gcc) to modify executable code so that it fails
+more quickly.
+%
+Cloud stands for: I'm too stupid to know about the server client concept.  -- 20h
+%
+PGD_DDCANCREATED3DBUFFER pfnDdCanCreateD3DBuffer =
+(PGD_DDCANCREATED3DBUFFER)gpDxFuncs[DXG_INDEX_DxDdCanCreateD3DBuffer].pfn;
+%
+spaceinvader@oftc.net#suckless> Richard M. Stallman doesn't wash his clothes because the
+washing machine might have binary firmware
+%
+vt3@freenode#plan9> well, philosophy and plan 9 have something in common...they
+are both dead.
+%
+major@freenode#vsta> uriel, understanding is like love, it comes to those who
+accept it, not to those who beat it with a stick ;)
+%
+zcram@freenode#cat-v> "Mebibyte" sounds something an earthworm would yell when
+it is being put on a fishHook.
+%
+<kfx@freenode#cat-v> [...] is it like #freebsd where networking questions
+are met with complaints about george bush?
+%
+garbeam@freenode@cat-v> my proposal is that github needs a button on each
+project "Report spam" button
+%
+    ( )
+ ( ) ( THIS STEAMING PILE OF SHIT IS MY TRIBUTE TO WIKIPEDIANS
+  ) _ ) EVERYWHERE !!!!!  KEEP UP THE HARD WORK MAKING UNRELIABLE,
+   ( \_ FADDISH, NEEDLESSLY CONTROVERSIAL, NON-FACT-CHECKED TURDS
+ _(_\ \)__
+(____\___)) TO WIKIPEDIANS !!!!!!!!!!!!!!!  OR AS I CALL THEM WIKIPEDOS
+                            --http://fortunes.cat-v.org/cat-v
+%
+<kfx@freenode#cat-v> TAOCP is fucking crucial, it's what allows you to
+explain to your python-obsessed boss exactly why python, mathematically, can go
+fuck itself
+%
+__20h__@freenode#cat-v> 1 yb (yard bit) = PI / 3 + 0.2143 eb (european bit)
+%
+perhaps Plan 9 is just the Black Books of software?  -- Charles H. Forsyth
+%
+zcram@freenode#cat-v> Clown commuting!  Trust your valuable data with us!  We
+know how to take good care of it.  Our technititians are
+	       24/7 working on making best effort to sustain first-class
+	       enterprise level utilisation of important details.
+%
+08:43 < zcram> what ever happened to finger?
+08:44 < __20h__> zcram, it got sued for sexual infringement.
+%
+<soul9> friend just travelled to sierra leone: he didn't have enough
+bandwidth for xmpp.  irc was working fine
+%
+<kfx> haskell is [a domain specific language], specific to the .edu domains
+%
+<kfx> I gave a 'brief history of php' presentation once
+<kfx> about how one of the core devs quit because he hated jews
+<kfx> and the most prolific security dev quit because nobody listened to him
+about all the horrible shit he found
+%
+In IEEE 754 sqrt(-0) = -0
+%
+<EthanG#cat-v> rc isn't syntactic sugar so much as a small but nicely
+balanced meal.  Not quite substantial enough to be a steak, perhaps it's a fisherman's
+pie. Bourne shell is more like a raisin and bacon pie with a sprinkling of
+sugared corn flakes on top.
+%
+21:58 < kfx> I have yet to see a consitution or even a basic manifesto
+21:58 < kfx> this revolution sucks
+22:01 < __20h__> kfx, it was a short revolution.
+22:01 < kfx> more like an oscillation then
+%
+I've talked myself into a superstition.  - rob pike
+%
+awk with their heads!  -- stanleylieber
+%
+<sqweek#inferno> oh wow, [in acme-sac] up and down arrows move the cursor
+instead of scrolling, that's...  kind of annoying
+%
+[The] MIT/X [license] is the best balance between "Keep respect to me." and Kim-
+Jong Uriel['s] "yes, build your physics package with it." -- Christoph Lohmann
+%
+Mastering CSS is like mastering throwing shit into a fan -- dreadlorde
+%
+Don't make your internal product name 'assmonkey', or you'll wind up with a real
+product named 'assmonkey' -- bramcohen
+%
+he's a ruby programmer.  sex won't be biologically feasible for him for a few more
+years -- kfx
+%
+I honestly and deeply hope you fail completely.  - Uriel regarding a project to
+convert arXiv to XHTML/MathML
+%
+Metadata is always true!  -- 20h
+%
+The bikeshed has already been painted, and the painter has gone.  -- Russ Cox on a
+proposal for changing the Go syntax.
+%
+There's no sense in reading books, when there's a computer game.  -- 20h on Dune
+%
+The X documentation is full of lies.  -- Theo de Raadt
+%
+<jordanb#emacs@freenode.org> I think it's hilarious that you're doing xlib
+programming and your nick is 'kruhft'
+%
+[software security] placebos need to keep getting more complex to keep working.
+-- EthanG
+%
+Should I be concerned that I've been rebuilding main on amd64/i386/powerpc for the
+last ~12 hours and nothing's failed yet?  Success is almost always indicative of
+impending doom.  -- Adam Conrad, on building Ubuntu packages
+%
+<blizzard> Mitch_Bradley_: I had dinner with the guy who created EFI the
+other night
+<cjb> blizzard: during the dinner, did he start wishing he had some kind of
+piercing implement to eat with, and then proceed to design and implement it?
+%
+<aiju> [the] W3C couldn't make bread without at least three different
+comitees and several hundred megabytes of XML involved
+%
+<aiju> females on IRC are like magnetic monopoles
+<aiju> theory suggests their existence, but they haven't been found yet
+<aiju> (and everything would be much nicer with them)
+%
+If you love job security and don't respect yourself, you will love Perl.  --
+xardox in reddit/r/proramming
+%
+1975: EWD506 page 2: The German adoption of ALGOL 68 has had a similarly
+paralyzing effect upon the Germans as the Russian decision in the late sixties to
+develop as their next national computer series a bit-compatible copy of the IBM
+360 - the greatest American victory in the cold war!  (PDF)
+%
+<ment> i hope there is some dishonesty otherwise i would be very
+disappointed in mankind
+%
+<jse> If you've ever observed how these modern people (SIC) treat their pets
+and their kids, you can tell it's the tail that wags the dog.
+%
+<dv-> i don't understand why firefox uses cpu% even when it's not doing
+anything
+<kfx> [firefox] is always doing something, even if it's just calculating the
+opportune moment to crash inexplicably
+<EthanG> C++, the programming language which is nearest to human language
+yet!  It has achieved context-dependance, what a great step!
+<aiju> EthanG: does C++ have insults yet?
+<uriel> C++ *is* an insult
+%
+<via> there's a reason linux users don't use lilo anymore, it [is] called
+progress
+<martian67> if progress is grub2, i guess im a luddite
+%
+I use Plan 9.  Which is equivalent to saying I don't use computers.  By
+transitivity, it's the smarter choice.  -- Capso
+%
+Linux - every program, package, piece of code, depends on some shit that will make
+you want to scoop out your brains with a melonballer -- Capso
+%
+using debian is like deciding you want your computer to be run by the [Ministry of
+Information Retrieval] in the movie Brazil -- kfx
+%
+100% of the shit I make up about Linux turns out to be true.  Either now or in the
+future.  -- Capso
+%
+Whatever you want, wchar_t is not the solution.  -- Moritz Wilhelmy
+%
+ktsuss stands for "keep the su simple, stupid", and as the name says, is a
+graphical version of su written in C and GTK+ 2.
+%
+<andguent> 9P AND HTTP ARE THE SAME.  JUST LIKE BICYCLES AND SUBMARINES.  I
+REST MY CASE.
+%
+all bridges conceal trolls -- Stanley Lieber
+%
+<kfx> why does gnu ls link against libpthread
+<sl> kfx: both begin with l, right
+<jse> When in doubt...  link it.
+%
+[ 35.998] (II) Integrated Camera: Configuring as keyboard
+%
+Voting is an essential part of the bureaucratic process.
+%
+using a GUI is like being a sub in BDSM.  your every action is constrained...  --
+EthanG
+%
+In the land of the blind, the one-eyed man would poke his eye out to fit in.  --
+auntbeast
+%
+Arsenic and Old Libc
+%
+The Comedy of Errnos
+%
+Much ADA About Nothing
+%
+if the Berkeley folks designed a spoon, it would be part of the dishwasher -- aiju
+%
+The Russian equivalent of 'rubber-hose cryptanalysis' is 'thermorectal
+cryptoanalysis', which refers to a joke about using rectal insertion of a
+soldering iron.
+%
+OOP spelled backwards is POO
+%
+martian67> becoming a hacker is very tao like, you become it by not caring
+about becoming it
+sl> becoming a janitor is very tao like, stop yapping and pick up a broom
+%
+izaki: There should be a project to port spanish swearing to the international
+community...  open-hostia
+%
+martian67: there you go uriel, there is the cat-v draw: an international effort to
+tell everyone to go fuck themselves
+%
+welcome to #cat/b/
+%
+reasonably priced speech
+%
+<kfx> getting involved with the AUR is like fucking a fat chick to make
+yourself gay
+%
+<kfx> GLIB: Gay/Lesbian/Idiot/Bisexual - The library package that
+will fuck ANYTHING
+%
+I want to type Tab at the beginning of an empty file and suddenly my new project
+appears.  -- 20h on tab-completion
+%
+Graham's number (n.): the number of Ranma Saotome's fiancés
+$
+we [people of #cat-v] should get renamed to cat --warning_level verbose -- aiju
+%
+[6523481.895302] Out of memory: Kill process 9452 (java) score 463 or sacrifice
+child
+%
+once I did software for the military, it was a requirement that the ratio between
+comments and code was at least 2.5.  -- Aram
+%
+1986 - Brad Cox and Tom Love create Objective-C, announcing "this language has all
+the memory safety of C combined with all the blazing speed of Smalltalk." -- From
+a brief history of programming languages.
+%
+"You'd better click something or I'll have to ship you some books." -- Dogbert on
+his 'Zero clicks Purchase' patent.
+%
+If you're in need of a good startup idea: Claim a patent for crossing fingers to
+build a luck generator.  -- mono in hackernews
+%
+BIND people could put security holes into a hello world program -- aiju
+%
+"why would you do that"
+"what didn't ken do"
+"what would rob mock"
+"what would dennis say something nice about while simultaneously implying that you
+are a fucking moron"
+%s
+sweet I'll click a reddit link to find out what fast-food employees think about
+programming -- kfx
+%s
+Rebooting with dbus+hal: dbus-send --system --print-reply
+--dest="org.freedesktop.Hal" /org/freedesktop/Hal/devices/computer
+org.freedesktop.Hal.Device.SystemPowerManagement.Shutdown
+%s
+I hear the chicks in Dresden used to be hot -- kfx
+%s
+Error: opening audio device: Success
+%s
+<kfx> __20h__: I'm an internationally ratified ISO standard.
+<__20h__> kfx, are you XML based?
+<kfx> no, asn.1
+%s
+$ awk --copyleft | wc -c
+666
+%s
+<Tanami> plan 9 has a thriving and friendly community
+%s
+assert(assert(assert(assert(assert(assert(1)))))) /* check for cosmic radiation */
+%s
+<chowder> hello all.  I'm interested in plan9 but I really don't know much
+about it.  I have yet to read all of the docs but I was wondering if anyone was
+interested in porting wayland to plan9
+%s
+<cinap_lenrek> i just know pokemon exception handling...  catch them all
+%s
+The Universal Serial Bus is a complex and, therefore, popular bus on personal
+computers and other devices.  - nemo
+%s
+treating info as a replacement for man pages is arrogance beyond any rational
+description.  Then again, the quality of documentation for most GNU software
+matches that of the code.  -- Lyndon Nerenberg
+%s
+it's like instead of taking a bath, you buy a monster air filter, so no one will
+notice the stench.  -- erik quanstrom on the creation of GNU info to manage Emac's
+documentation.
+%s
+aiju's plan9 faq - Q: does plan9 have ...  ? A: no
+%s
+EFI should be renamed to WTFI -- aiju
+%s
+aiju: ACPI -- Abominable Crap Produced by Intel
+%s
+These appliances offer an innovative, pragmatic approach to harness the power of
+SOA while simultaneously enabling you to leverage the value of your existing
+application, security, and networking infrastructure investments.  -- Actual
+description of IBM's "XML Firewall" appliance.
+%s
+enterprise product descriptions are also written by Markov bots -- aiju
+%s
+% cat /rc/bin/edify
+#!/bin/rc
+$* |[2] awk ' { print "?" } '
+%s
+EthanG briefly ponders filing fhs.pdf under books/fiction
+%s
+<cinap_lenrek> troff is the assembly language of text setting, lots of
+newlines
+%s
+<aiju> the X41 has a PCI bus [busno 4] Plan 9 does not show o.O
+<uriel> fuck the bus, get on the train!
+<martian67> uriel, "trains" are a propritary apple technology
+<kfx> martian67: you're thinking of mantrains
+%s
+<cinap_lenrek> throw a cat on a keyboard...  and you will see characters
+you'v never seen!
+<uriel> cinap_lenrek: with a cat on the keyboard you will see colored
+blinking text on a rio terminal
+%s
+< anth_x> when i did trade shows, i had a copy of the X11 manual, volume 0,
+and a copy of the various draw man pages.  it was a good illustration.
+<aiju> photoshop a hypothetical book containing all X11 source code, and
+compare it to the earth-moon distance
+%s
+BDD is a second-generation, outside-in, pull-based, multiple-stakeholder,
+multiple-scale, high-automation, agile methodology.  It describes a cycle of
+interactions with well-defined outputs, resulting in the delivery of working,
+tested software that matters.
+%s
+3\.  goth
+ People who wish to be an individual by conforming to a subculture.
+ see also irony.
+
+     Goth: "I *am* more unique than you, more interesting than you.  And I'm
+     *different*, because I conform to a subculture."
+
+    [http://goth.urbanup.com/178444]
+%s
+Doug McIlroy doesn't have an Erdos number; Erdos has a McIlroy number.
+Doug McIlroy doesn't make system calls.  System calls call Doug McIlroy.
+Doug McIlroy can create 3-ended pipes.
+Doug McIlroy doesn't debug.  He stares at tty0 until it fixes the problem.
+Doug McIlroy's programs don't need a garbage collector; they pick up their OWN
+garbage.
+Once, Doug McIlroy got mad at his terminal and smacked the keyboard.  The result
+is called "Unix."
+Alan Turing always wanted to win a McIlroy Award, but didn't qualify.  No one has.
+In 1984, the Department of Justice broke up AT&T because they had a monopoly.  On
+Doug McIlroy.
+%s
+Saw comment // NEW BOOST CODE, and had a moment of panic before realizing it was
+vehicle boost, not C++ boost -- John Carmack
+%s
+<aiju> people say imperative programming is like sending a kid to the
+grocery, you must specify exactly what you want or you end up with junk
+<aiju> object orientated programming is then like sending a bureaucrat to
+the grocery, you must fill a lot of paperwork and are guaranteed to end up with
+something wrong
+<taruti> and functional?
+<aiju> sending your grandma which knows precisely what's best to buy but
+spends her time with chitchat
+<cinap_lenrek> and when someone goes on a robbery on that shop?  whats that
+programming called?  :)
+<aiju> assembly
+<cinap_lenrek> forth is like putting all kinds of stuff in your shopping
+cart and shuffeling it arround
+<cinap_lenrek> prolog is like convicing the guy on the cash box to give
+money to YOU for taking the stuff
+<aiju> no, prolog is like telling your mom "i want cake" and she does
+everything for you
+<cinap_lenrek> aiju: no...  she will make all possible configurations of
+cake possible
+<cinap_lenrek> causing worldwide resource exhaustion
+<aiju> K is like sending a chinese guy
+<aiju> nobody understands what you tell him, but he gets the job done
+<kfx> and then sells your secrets to his government
+%s
+<ment> IAEA does a lot of important things for nuclear safety, like
+maintaining the INES scale
+<aiju> wow!  they do numbers!  also, i fail to see how INES has a
+relationship to nuclear safety
+<ment> without INES we wouldn't know how much to panic
+%s
+<aiju> i like how 2011 cell phones emulate 1970 modems
+%s
+<ment> glenda is 19 years old, she wants to go out and have some fun, not to
+be locked in attic and get molested by her uncle
+%s
+<aiju> is he building the GNU ark?  two of each feature ..
+%s
+nsz@tpx:~$ # GNU coreutils...
+nsz@tpx:~$ strace /bin/true 2>&1 |wc -l
+107
+%s
+<sl> java applications give me lots of time to catch up on my reading.
+%s
+People who think that userspace filesystems are realistic for anything but toys
+are just misguided.  -- Linus Torvalds
+%s
+cat-v.org?  What was that website that attacked gentoo?  It was named after a
+compiler flag.  -- some /g/tard
+%s
+<kfx> google+ just suggested lennart poettering as a friend.
+%s
+<kfx> c++ programmers wouldn't know an integer if it was wedged inside them
+%s
+<__20h__> rook, no, my usage is the official god-sent standard.
+<rook> __20h__: wasn't uriel your god?
+<__20h__> I saw some burning bush and there was the stone man page of »tag
+usage«.
+<__20h__> No, uriel set the bush on fire.
+%s
+<maht> my worst problem holistic: I'm forced into using PHP to build XML to
+post items from MySQL to eBay's.  The sum of the parts is sqrt(-1)
+%s
+<laochailan> googling "OOP in ANSI C" is the best recipe for a sleep full of
+horrible nightmares
+%s
+<flags> aiju, why use sed when I can make it a thousand times more
+complicated in Python
+%s
+<crazy2be> [XMPP] should use YAML inside their xml tags, make it easier to
+read
+%s
+<anschelsc> So, I've read about how horrible html and its descendants are
+<sl> anschelsc: computers are horrible, do you have a solution for that?
+%s
+<kfx> writing the documentation in aramaic and printing it on the backs of
+live wolverines is better than docbook
+%s
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
+interpreted as described in RFC 2119.
+%s
+<aiju> rockets are like bootloaders, they have multiple stages and explode
+half of the itme
+%s
+<sl> headline: 9FRONT REJECTS SOCIAL CONTRACT
+%s
+"the socialists discovered that their plan creates poverty, so they changed their
+name to environmentalists and made poverty their goal"
+%s
+<ment> respect my certficate authoritah!
+%
+<__20h__> Everything I say today is under the influence of alcohol.
+<aiju> okay and how is that different from usual?
+<__20h__> It's more sane.
+%
+<aiju> if PCRE doesn't support a feature, the PCRE guys just haven't heard
+of it
+%s
+<sl> if the general populace realized computers relied upon mathematics they
+would stop using the internet immediately
+%s
+<cinap_lenrek> did someone put a mount in your mount so you can walk while
+you walk?
+%s
+<kfx> you guys are surely cynical, but neither of you "worked" for the United
+States Government as long as I did
+%s
+<sl> the government is best suited to manage nuclear weapons because they
+could not possibly successfully conduct a nuclear war.
+%s
+If you want a picture of the fossil(4), imagine a boot stamping on a hard drive --
+forever.
+%s
+<aiju> rob pike on IRC?  that's like Jesus Christ on Facebook
+<uriel> and ken on irc would be like the Holy Spirit on MySpace
+%s
+Nobody wants to say how this works.  Maybe nobody knows ...  -- - xorg.conf(5)
+manual page
+%s
+<EthanG> if your command needs an info page, it has a more urgent need to be
+buried and forgoten
+%s
+<sl> mpl: i just meant, knowledge of each program in that list of programs
+compliments each other.
+<f2f> "you're a very good program" said the other program
+%s
+craftd keeps modern UNIX daemon philosophy in mind.  This includes best practice
+like async polling I/O, multi-threading, and use of high quality libraries
+whenever possible.
+%s
+<aiju> i only use high quality organic libraries from local farmers
+%s
+We use Linux for all our mission-critical applications.  Having the source code
+means that we are not held hostage by anyone's support department.  -- Russell
+Nelson, President of Crynwr Software
+kfx: We use Linux for all our mission-critical applications.  Having the source
+code means that we are held hostage by Red Hat's support department.
+__20h__: ...  means that we are held hostage by the development decisions of
+Lennart Poettering.
+%s
+aiju: RoR lacks support for self-signing-oriented NoSQL-based XML over YAML
+shader-based metadata-oriented solution
+%s
+aiju: programming is serious business, no place for hippie lovefests
+%s
+kfx: I approve of 9front's method of handling bug reports: bug is filed ->
+attempting to view bug crashes google server -> SUCCESS
+%s
+aiju: we need a program to generate C code like bullshit
+kfx: aiju: we have that program, it's called "lennart"
+%s
+__20h__: The only reason for me to learn French was to be able to order beer in
+the western provinces.
+%s
+__20h__: [when we invade France] we will first teach all of you German and the
+German mindset.  The first concept we will introduce is called »work«.
+%s
+landley: My general theory is that anything directly involved with the gnu project
+is run by crazy politicians who only do software as a sideline to their religious
+advocacy work.
+%s
+what's the opinion of the catholic church according to condoms on dildos?  -- 20h
+%s
+apple developers are like abused wives -- martian67
+%s
+MySQL was the first NoSQL database
+%s
+I've programmed Haskell before, no amount of boilerplate can scare me -- vegai
+%s
+dreadlorde: [on hearing the news that dmr had died] why couldn't bjarne stroustrup
+have died instead?
+martian67: one good person and one bad person have to die in pairs
+martian67: so the universe stays in ballance
+martian67: steve jobs died, so that means somebody that did some seriously
+important good things had to go too :/
+%s
+[cinap] doesn't seem to sleep.  he says that he just stares at catclock for a
+while.
+%s
+aiju> we need objectivism oriented programming!
+%s
+venti can store data, but not delete it, fossil can delete data, but not store it,
+they complement each other perfectly!
+%s
+sl | most entertaining is new 9front users wandering into #plan9 asking for help
+with 9front specific features
+sl | you can almost hear the macbook lids slamming shut in anger
+%s
+sl | fossil.pdf is used to scare children at night before going to sleep.
+%s
+sl | gsoc 2012: reinstate /lib/meinkampf
+sl | this sounds like a good student project
+%s
+programs are mostly bugs wrapped in some user interface -- cinap_lenrek
+%s
+kfx | I do not read hacker news
+kfx | I would if any hackers were present on it
+%s
+ment> everytime i see "google plus" i hope it's "google plus vellocet,
+synthemesc or drencrom"
+The Android SDK archive initially contains only the basic SDK tools.  It does not
+contain an Android platform or any third-party libraries.  In fact, it doesn't
+even have all the tools you need to develop an application.  -- Android SDK Readme
+%s
+Rob Pike: Is it feasible to write C that looks like C any more?  I guess that ship
+has sailed.
+Michael Jones: ...and Steve Bourne was its captain.
+Rob Pike: That's incorrect.  Bourne's version of C was Algol-68.  Gcc's version
+is....  a lot of underscores on things.
+%
+I just read that George R. Martin does all his writing on a DOS machine and
+Wordstar 4.0, no wonder he manages to get so much done -- vegai
+%
+SmoothPorcupine> kfx, it's really hard for me to imagine you using a computer.
+SmoothPorcupine> I always figured you just stared it down until it worked.
+kfx> SmoothPorcupine: sometimes I have to punch it
+%
+I like offending people because I think people who get offended should be
+offended.  -- Linus Torvalds
+%
+aiju> from browser error messages my mother has deduced that there is some kind
+of central thing called The Server
+aiju> which runs the entire internet
+%
+cinap_lenrek> i will not buy this vterm_screen_set_damage_merge, it is
+VTermDamageSize
+%
+cinap_lenrek> filtering the internet is like trying to vacuum the desert
+%
+XML types and type derivation are syntactic shorthands for what amounts to regular
+expressions embedded in a recursive punctuation tree.  -- Anonymous Coward
+%
+aiju | > turn on computer
+aiju | The screen flickers.  It shows: "Plan 9 from bell labs".  You see interrupt
+route code failing.
+cinap_lenrek | "the computers display seems to be on, but it stoped after printing
+memory sizes"
+aiju | > examine interrupt routing code
+aiju | It's broken.
+aiju | > fix interrupt routing code
+aiju | You can't.
+aiju | > read x86 documentation
+aiju | You grew a beard.
+aiju | You now know about x86 interrupts.
+aiju | > fix interrupt routing code
+aiju | You can't.
+cinap_lenrek | > read ACPI specification
+cinap_lenrek | You wake up in hostpital
+aiju | >fix interrupt routing code
+aiju | Okay.
+aiju | > boot computer
+aiju | The machine shows an rc prompt.
+aiju | > release code
+aiju | You've been eaten by a grue.
+%s
+anytime a new dbus conf is installed you need to restart dbus daemon but this way
+running applications using dbus crash immediately proper way is to reload dbus
+configuration instead of restarting it -- Post in the Tiny Core Linux forum
+%s
+there is no feature so bad that some people won't love it.  -- aiju
+%s
+Soon Unix had the mass of Andre the Giant, the body of the Elephant Man, and the
+mind of a forgotten Jack Nicholson character.
+%s
+The worst strain was on Unix's mind.  Unable to assimilate all the conflicting
+patchworks of features it had ingested, its personality began to fragment into
+millions of distinct, incompatible operating systems.  People would cautiously say
+"good morning Unix.  And who are we today?" and it would reply "Beastie" (BSD), or
+"Domain", or "I'm System III, but I'll be System V tomorrow." Psychiatrists
+labored for years to weld together the two major poles of Unix's personality,
+"Beasty Boy", an inner-city youth from Berkeley, and "Belle", a southern
+transvestite who wanted a to be a woman.  With each attempt, the two poles would
+mutate, like psychotic retroviruses, leaving their union a worthless blob of
+protoplasm requiring constant life support to remain compatible with its parent
+personalities.
+Finally, unbalanced by its own cancerous growth, Unix fell into a vat of toxic
+radioactive wombat urine, from which it emerged, skin white and hair green.  It
+smelled like somebody's dead grandmother.
+%s
+“aestheticles: n.  The little-known source of aesthetic reactions.  If your whole
+body feels like going into a fetal position or otherwise double over from the pain
+of experiencing something exceptionally ugly and inelegant, such as C++, it’s
+because your aestheticles got creamed.” -- Erik Naggum
+%s
+06:26:12 cinap_lenrek | apparently, nobody needs anything we do
+06:27:27 cinap_lenrek | i just build sand castles
+06:27:33 cinap_lenrek | stuff i need myself
+06:27:44 cinap_lenrek | plan9 is a great desert to build sand castles
+06:27:52 cinap_lenrek | lots of sand there
+06:28:13 cinap_lenrek | everywhere else, all you have is stinking mud or something
+06:28:21 cinap_lenrek | not mutch fun to build anything
+%s
+hiro_ | there is this traffic overlay in google maps.  they should make all
+netherlands show "slow" all the time, even in traffic jams in Germany people go
+faster than in the netherlands on average
+%s
+The thing you have to remember about "hacker news" is that nothing posted there is
+news and none of the people who frequent it are hackers.  "Web Developer with an
+Unwarranted Sense of Self-Importance" just doesn't roll off the tongue quite as
+readily as "hacker," just like "link-dump and self promotion" doesn't have the
+same ring as "news." -- Kurt H. Maier
+%s
+Running on 10 million lines of code that control over 100 computerized components,
+the Chevrolet Volt is the epitome of how cars are built on a smarter planet.  --
+Promotional text for IBM's (i)Rational platform.
+%s
+"ioctl is a closet full of skeletons" -- doug
+%s
+aiju: will you also claim that stabbing someone is "not really different from
+performing appendectomy"
+%s
+it's a bit counterintiutive that javascript was supposed to make the web more
+responsive, but ended up making it slower -- DMorsing
+%s
+I’ve not seen much evidence that people love other people for sensible reasons.
+-- Stanley Lieber:
+%s
+hell is other people's unix.  -- sartre
+%s
+hell is other people's code.  -- aiju
+%s
+__20h__ | The »GNU/Turd« term is a trademark of uriel.
+%s
+cinap_lenrek | aiju should write a pdp-11 emulator for plan9, and call it 911
+uriel | or 9/11
+cinap_lenrek | when someone asks, we can say "aiju did 9/11"
+%s
+aiju | i'll make my own kernel and call it jfk -- julius' fucking kernel
+aiju | and then i'll stop maintining it
+aiju | "i killed jfk"
+%s
+sl | cat-v.org was like john the baptist in 'the last temptation of christ'
+%s
+"Unix makes everything harder" -- Rob Pike, 1989
+"But it's nothing compared to OpenVMS" -- aiju, 2012
+%s
+khm | once rhel7 becomes commonplace, linux will basically be a cross between
+windows xp and os x
+%s
+aiju | lua combines the simplicity of java with the power of basic
+%s
+OS X is using a newer networking philosophy taken from the plan 9 operating
+system, where everything is file based kinda thing.  -- RoboTamer in the go-nuts
+mailinglist
+%s
+aiju | "the safeword is /sbin/halt"
+%s
+cinap_lenrek: we can no longer stand dynamic library corruption, dll subversion,
+dll indoctrination and the international dll dependency conspiracy to impurify our
+precious process memory images
+%s
+(#cat-v) khm → occasionally someone on hacker news will link to an article so they
+can all misunderstand it together
+%s
