@@ -1,2 +1,4 @@
 # Files that will be removed from ./built should be put here
 modMetadata
+shjs
+gosh
