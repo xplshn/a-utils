@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/liamg/tml"
 )
 
 /* | fortune is a minimalistic implementation of the `fortune` program we all know
@@ -42,7 +44,7 @@ func findAndPrint(fortuneFile string) error {
 	}
 	rand.Seed(time.Now().UTC().UnixNano())
 	fortune := fortunes[rand.Intn(len(fortunes))]
-	fmt.Println(fortune)
+	fmt.Println(tml.Sprintf(fortune))
 	return nil
 }
 
