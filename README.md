@@ -27,7 +27,7 @@ I am very much against bloat, but I enjoy challenges, which translates into me i
 ##### Screenshots?
 ![image](https://github.com/user-attachments/assets/5eb85af5-e477-4b45-b2f9-8be342ab6e3e)
 ![image](https://github.com/user-attachments/assets/e6707b7e-d7b0-4c08-bf37-1fbcfbf55803)
-![image](https://github.com/user-attachments/assets/2cd4b402-c189-4f30-b978-f828480087fd)
+![image](https://github.com/user-attachments/assets/4c898594-a1b8-40cc-a301-4f164111a5c5)
 
 
 ### Note
