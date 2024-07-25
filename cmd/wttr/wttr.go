@@ -8,12 +8,12 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
 
 const (
-	defaultCity = "Berkeley"
-	defaultURL  = "https://wttr.in"
+	defaultURL = "https://wttr.in"
 )
 
 var defaultClient = &http.Client{
@@ -32,7 +32,8 @@ type WeatherClient struct {
 
 func NewWeatherClient(options *Options) *WeatherClient {
 	if options.City == "" {
-		options.City = defaultCity
+		fmt.Fprintln(os.Stderr, "error: the user did not specify a city")
+		os.Exit(5)
 	}
 	if options.Params == nil {
 		options.Params = url.Values{
@@ -77,7 +78,7 @@ func displayWeather(reader io.Reader) error {
 }
 
 func main() {
-	location := flag.String("location", defaultCity, "Location for the weather report")
+	location := flag.String("location", "", "Location for the weather report")
 	onlyCurrent := flag.Bool("0", true, "Only current weather")
 	superQuietVersion := flag.Bool("Q", true, "Superquiet version")
 	forceANSI := flag.Bool("na", false, "Request non-ANSI output format. (HTML)")
@@ -88,7 +89,30 @@ func main() {
 	quietVersion := flag.Bool("q", false, "Quiet version")
 	noTermSeqs := flag.Bool("T", false, "Switch terminal sequences off")
 	disableDefaults := flag.Bool("nd", false, "Disable default options")
+	flag.Usage = func() {
+		p := `
+ Copyright (c) 2024, xplshn [3BSD]
+ For more details refer to https://github.com/xplshn/a-utils
 
+  Description
+    Make a request to the online service wttr.in, which provides weather information
+  Synopsis:
+    wttr [--location] <-0Q>
+  Options:
+    --location <city>       Specify the location for the weather report. [!]
+    -0                      Display only the current weather.
+    -Q                      Enable the super quiet version, showing minimal information.
+    -1                      Display the current weather and today's forecast.
+    -2                      Display the current weather, today's, and tomorrow's forecast.
+    -d                      Restrict output to standard console font glyphs.
+    -n                      Enable the narrow version, with a compact output format.
+    -q                      Enable the quiet version, showing limited information.
+    -T                      Disable terminal sequences.
+    -nd                     Disable default options.
+    -na                     Request non-ANSI output format (HTML).
+`
+		fmt.Println(p)
+	}
 	flag.Parse()
 
 	// Determine if any flags other than the location were provided, if so, no default flags are used

@@ -1,3 +1,5 @@
+// Copyright (c) 2024, xplshn, u-root and contributors  [3BSD]
+// For more details refer to https://github.com/xplshn/a-utils
 package main
 
 import (
@@ -13,13 +15,46 @@ import (
 	"github.com/alecthomas/chroma/v2/styles"
 )
 
+/* Considered harmful:
+   If these are ever implemented... Its for compatibility reasons.
+   	  -n Number output lines
+   	  -b Number nonempty lines
+   	  -v Show nonprinting characters as ^x or M-x
+   	  -t ...and tabs as ^I
+   	  -e ...and end lines with $
+   	  -A Same as -vte
+*/
+
 func main() {
-	var syntaxHighlighting bool
-	flag.BoolVar(&syntaxHighlighting, "x", false, "enable syntax highlighting")
+	syntaxHighlighting := flag.Bool("x", false, "enable syntax highlighting")
+	consideredHarmful := flag.Bool("v", false, "cat -v considered harmful!")
+	flag.Usage = func() {
+		p := `
+ Copyright (c) 2024, xplshn, u-root and contributors  [3BSD]
+ For more details refer to https://github.com/xplshn/a-utils
+
+  Description
+    Concatenates files and prints them to stdout.
+  Synopsis:
+    cat <-x> [FILES]...
+  Behavior:
+    If no files are specified, read from stdin.
+  Options:
+    -x: enable syntax highlighting
+  Note:
+    This implementation of cat is NOT POSIX. It implements syntax highlighting using the -x parameter.
+`
+		fmt.Println(p)
+	}
 	flag.Parse()
 	args := flag.Args()
 
-	if err := run(os.Stdin, os.Stdout, syntaxHighlighting, args...); err != nil {
+	if *consideredHarmful {
+		fmt.Println("cat -v considered harmful!")
+		os.Exit(69)
+	}
+
+	if err := run(os.Stdin, os.Stdout, *syntaxHighlighting, args...); err != nil {
 		fmt.Fprintln(os.Stderr, "cat failed:", err)
 		os.Exit(1)
 	}

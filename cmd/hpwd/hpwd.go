@@ -1,3 +1,5 @@
+// Copyright (c) 2024, xplshn [3BSD]
+// For more details refer to https://github.com/xplshn/a-utils
 package main
 
 import (

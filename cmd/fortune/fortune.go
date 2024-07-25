@@ -1,3 +1,5 @@
+// Copyright (c) 2024, xplshn [3BSD]
+// For more details refer to https://github.com/xplshn/a-utils
 package main
 
 import (
@@ -81,6 +83,22 @@ func parseArgs() (string, error) {
 	flag.StringVar(&fortuneFile, "file", "", "Path to the fortune file")
 	flag.StringVar(&fortunePath, "path", "", "Colon-separated list of directories containing fortune files")
 	DisplayVersion := flag.Bool("version", false, "Display the version of this implementation")
+	flag.Usage = func() {
+		p := `
+ Copyright (c) 2024, xplshn [3BSD]
+ For more details refer to https://github.com/xplshn/a-utils
+
+  Description
+    Provide a quote from a "cookie file"
+  Synopsis:
+    fortune <--file|--path [file||directory]|--version>
+  Options:
+    --file: will read the provided file and echo a quote from it
+    --list: will randomly select a file from within this directory and immeadiately return a quote from it
+    --version: will display the version of this program
+`
+		fmt.Println(p)
+	}
 	flag.Parse()
 
 	if *DisplayVersion {

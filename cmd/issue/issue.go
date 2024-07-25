@@ -1,3 +1,5 @@
+// Copyright (c) 2024, xplshn [3BSD]
+// For more details refer to https://github.com/xplshn/a-utils
 package main
 
 import (
@@ -12,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-   "github.com/liamg/tml"
+	"github.com/liamg/tml"
 )
 
 // Define functions to generate dynamic replacements
