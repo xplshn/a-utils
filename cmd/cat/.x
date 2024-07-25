@@ -1,0 +1,1 @@
+/opt/andes/bin:/tmp/.pelfbundles/pbundle_sway17218832965456_32473/bin:/opt/andes/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/anto/.local/bin:/home/anto/Programs:/home/anto/.local/share/flatpak/exports/bin:/usr/local/go/bin:/home/anto/Documents/ItAll/cosmocc/bin
