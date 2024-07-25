@@ -97,7 +97,7 @@ func main() {
   Description
     Make a request to the online service wttr.in, which provides weather information
   Synopsis:
-    wttr [--location] <-0Q>
+    wttr [--location] <[-0|-na|-nd|-T|-q|-n|-d|-2|-1|-Q]>
   Options:
     --location <city>       Specify the location for the weather report. [!]
     -0                      Display only the current weather.

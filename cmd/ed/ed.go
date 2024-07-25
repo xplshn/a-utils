@@ -18,7 +18,7 @@
 // The following has *not* yet been implemented, but will be eventually:
 // - Unimplemented commands: g, G, v, V
 // - does not (yet) support "loose" mode
-// - does not (yet) support "restricted" mod
+// - does not (yet) support "restricted" mode
 package main
 
 import (
@@ -29,8 +29,6 @@ import (
 	"io"
 	"log"
 	"os"
-
-	"github.com/u-root/u-root/pkg/uroot/util"
 )
 
 // flags
@@ -38,8 +36,9 @@ var (
 	fsuppress bool
 	fprompt   string
 	usage     = `
- Copyright (c) 2024, xplshn, sweetbbak, u-root and contributors [3BSD]
+ Copyright (c) 2024, xplshn, u-root and contributors [3BSD]
  For more details refer to https://github.com/xplshn/a-utils
+
   Description
     The standard Unix text editor
   Synopsis
@@ -56,13 +55,17 @@ var (
     - Unimplemented commands: g, G, v, V
     - Does not (yet) support "loose" mode
     - Does not (yet) support "restricted" mode
+  Options:
+    -s          Suppress counts
+    -p [prompt] Specify a command prompt
+
 `
 )
 
 func init() {
 	flag.BoolVar(&fsuppress, "s", false, "suppress counts")
 	flag.StringVar(&fprompt, "p", "*", "specify a command prompt")
-	flag.Usage = util.Usage(flag.Usage, usage)
+	flag.Usage = func() { fmt.Print(usage) }
 }
 
 // current FileBuffer
