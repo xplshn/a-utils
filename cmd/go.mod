@@ -9,4 +9,4 @@ require (
 	github.com/u-root/u-root v0.14.0
 )
 
-require github.com/dlclark/regexp2 v1.11.0 // indirect
+require github.com/dlclark/regexp2 v1.11.2 // indirect
