@@ -5,7 +5,7 @@ A-Utils is a growing set of utilities, some are meant to replace the ones you ar
 The code in this repo is largely inspired by `u-root`, various commands like `ed` are direct modifications upon `u-root`'s implementations.
 
 ## Why?
-I am tired of confusing BSD additions, GNU extension and flags added for compatibility with POSIX flags. I plan to implement every program that `u-root` lacks, or hasn't implemented as per the POSIX specifications, implementation deviations will be marked in the help pages/manual pages as a note stating: "This is NOT POSIX".
+I am tired of confusing BSD additions, GNU extension and flags added for compatibility with non-POSIX systems. I plan to implement every program that `u-root` lacks, or hasn't implemented as per the POSIX specifications, implementation deviations will be marked in the help pages/manual pages as a note stating: "This is NOT POSIX".
 Also, I got bored, so I started writting utilities for fun.
 
 #### Objectives
