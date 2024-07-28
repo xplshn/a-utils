@@ -108,7 +108,6 @@ func main() {
 		Name:        "ansi",
 		Synopsis:    "<--text|--list|--output> [name]...",
 		Description: "Print ansi escape sequences.",
-		Notes:       "For more details refer to https://github.com/xplshn/a-utils",
 	}
 	list := flag.Bool("list", false, "list available commands")
 	text := flag.String("text", "", "Wrap text around attributes")
