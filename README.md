@@ -27,9 +27,7 @@ Also, I got bored, so I started writting utilities for fun.
 I am very much against bloat, but I enjoy challenges, which translates into me implementing things I shouldn't and slapping the label "Feature" on-top. If you ever find a so called "feature" like this, do tell me why it is feature creep.
 
 ##### Screenshots?
-![image](https://github.com/user-attachments/assets/5eb85af5-e477-4b45-b2f9-8be342ab6e3e)
-![image](https://github.com/user-attachments/assets/e6707b7e-d7b0-4c08-bf37-1fbcfbf55803)
-![image](https://github.com/user-attachments/assets/4c898594-a1b8-40cc-a301-4f164111a5c5)
+![image](https://github.com/user-attachments/assets/49469f2b-0ffc-4f81-961a-c08d5b470af1)
 
 ##### Future:
  - Should this project adopt all of U-Root's commands and improve upon them? Or should `a-utils`
