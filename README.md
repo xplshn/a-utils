@@ -1,6 +1,6 @@
 The core utilities of https://github.com/xplshn/Andes.
 
-### First-grade utilities for your Unix system!
+### First-rate utilities for your Unix system!
 A-Utils is a growing set of utilities, some are meant to replace the ones you are using right now while others are simple commands that are great to have, like `wttr` or `issue`.
 The code in this repo is largely inspired by `u-root`, various commands like `ed` are direct modifications upon `u-root`'s implementations.
 
