@@ -14,7 +14,8 @@ EXTEND_FILES="$BASE/extendGo.b $BASE/extendC.b"
 EXTEND_EFILES="$BASE/extendExclude.eb"
 EXTEND_DIR="$BASE/extend"
 LOCAL_BUILD_DIR="$BASE/cmd"
-BUILT_DIR="$BASE/built"
+EXTEND_BUILT_DIR="$BASE/built/usr/bin"
+LOCAL_BUILT_DIR="$BASE/built/bin"
 
 # Function to log to stdout with green color
 log() {
@@ -48,8 +49,8 @@ build_commands() {
                 if [ -d "$dir" ]; then
                     # Check for .go files in the current directory
                     if find "$dir" -maxdepth 1 -type f -name '*.go' -print -quit | grep -q .; then
-                        log "Building Go projects in \"$dir\" and placing in $BUILT_DIR"
-                        (cd "$dir" && GOBIN="$BUILT_DIR" go install .)
+                        log "Building Go projects in \"$dir\" and placing in $LOCAL_BUILT_DIR"
+                        (cd "$dir" && GOBIN="$LOCAL_BUILT_DIR" go install .)
                     fi
                     # Check for cbuild.sh in the current directory
                     if [ -f "$dir/cbuild.sh" ]; then
@@ -68,15 +69,14 @@ build_commands() {
 
 # Function to move built executables to the built directory
 move_executables() {
-    mkdir -p "$BUILT_DIR"
     # Find and move files listed by cbuild.sh scripts
     find "$@" -type f -name 'cbuild.sh' -print | while IFS= read -r cbuild_file; do
         # Execute the cbuild.sh script and handle its output
         "$cbuild_file" retrieve | while IFS= read -r file; do
             # Ensure that only files (not directories) are copied
             if [ -f "$file" ]; then
-                # Move the file directly to $BUILT_DIR
-                mv "$file" "$BUILT_DIR" && log "Moved \"$file\" to \"$BUILT_DIR\""
+                # Move the file directly to $EXTEND_BUILT_DIR
+                mv "$file" "$EXTEND_BUILT_DIR" && log "Moved \"$file\" to \"$EXTEND_BUILT_DIR\""
             fi
         done
     done
@@ -85,8 +85,8 @@ move_executables() {
 # Function to clean up the built directory and remove binaries in specified main directories
 clean_up() {
     # Remove the built directory
-    log "Remove $BUILT_DIR"
-    rm -rf "$BUILT_DIR" >/dev/null 2>&1
+    log "Remove $(dirname "$LOCAL_BUILT_DIR")"
+    rm -rf "$(dirname "$LOCAL_BUILT_DIR")" >/dev/null 2>&1
     # Process each main directory
     for main_dir in "$@"; do
         if [ -d "$main_dir" ]; then
@@ -181,23 +181,27 @@ process_repos() {
     done
 }
 
-# Function to remove excluded files listed in $1 from the "built" directory inside $2
+# Function to remove excluded files listed in $1 from the "built" directory inside each target_dir
 remove_excluded_files() {
     list_file="$1"
-    target_dir="$2"
+    shift
 
     if [ ! -f "$list_file" ]; then
         log_error "Error: $list_file does not exist."
     fi
 
     # Read the exclude list, ignoring comments and empty lines
-    exclude_files=$(grep -v '^\s*#' "$list_file" | grep -v '^\s*$' | xargs)
+    exclude_files=$(grep -v '^\s*#' "$list_file" | grep -v '^\s*$')
 
-    # Iterate over each file in the exclude list
-    for exclude_file in $exclude_files; do
-        # Find the matching executable file in the "built" directory
-        find "$target_dir" -type f -name "$exclude_file" | while IFS= read -r file; do
-            rm -f "$file" || log_error "Failed to remove \"$exclude_file\" from \"$target_dir\"" && log_warning "Removed \"$exclude_file\" from \"$target_dir\""
+    # Iterate over each target directory passed as an argument
+    # shellcheck disable=SC2068 # We want to re-split the elements
+    for target_dir in $@; do
+        # Iterate over each file in the exclude list
+        for exclude_file in $exclude_files; do
+            # Find the matching executable file in the "built" directory
+            find "$target_dir" -type f -name "$exclude_file" | while IFS= read -r file; do
+                rm -f "$file" || log_error "Failed to remove \"$exclude_file\" from \"$target_dir\"" && log_warning "Removed \"$exclude_file\" from \"$target_dir\""
+            done
         done
     done
 }
@@ -206,9 +210,10 @@ case "$1" in
 "" | "build")
     log "Starting build process"
     process_repos "$EXTEND_DIR" "$EXTEND_FILES"
+    mkdir -p "$LOCAL_BUILT_DIR" "$EXTEND_BUILT_DIR"
     build_commands "$LOCAL_BUILD_DIR" "$EXTEND_DIR"
     move_executables "$LOCAL_BUILD_DIR" "$EXTEND_DIR"
-    remove_excluded_files "$EXTEND_EFILES" "$BUILT_DIR"
+    remove_excluded_files "$EXTEND_EFILES" "$EXTEND_BUILT_DIR" "$LOCAL_BUILT_DIR"
     log "Build process completed"
     ;;
 "clean")

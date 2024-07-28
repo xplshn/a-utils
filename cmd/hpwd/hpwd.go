@@ -1,4 +1,4 @@
-// Copyright (c) 2024, xplshn [3BSD]
+// Copyright (c) 2024-2024 xplshn						[3BSD]
 // For more details refer to https://github.com/xplshn/a-utils
 package main
 
@@ -6,9 +6,35 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"a-utils/pkg/ccmd"
 )
 
 func main() {
+	// Define your CmdInfo with the appropriate fields
+	cmdInfo := ccmd.CmdInfo{
+		Authors:     []string{"xplshn"},
+		Name:        "hpwd",
+		Usage:       "<|-h>",
+		Description: "Stylized `pwd` command",
+		Behavior:    "If in the home directory, display '~' or the value of COOLHOME if set. If inside the home directory but not in the home itself, display the relative path prefixed with COOLHOME_DEPTH if set. Otherwise, display the full path.",
+		Options:     []string{"-h", "--help"},
+	}
+
+	// Check for help flags manually
+	for _, arg := range os.Args[1:] {
+		if arg == "-h" || arg == "--help" {
+			helpPage, err := cmdInfo.GenerateHelpPage()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error generating help page:", err)
+				os.Exit(1)
+			}
+			fmt.Print(helpPage)
+			os.Exit(0)
+		}
+	}
+
+	// Main logic of the command
 	pwd, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Error getting current directory:", err)

@@ -1,4 +1,4 @@
-// Copyright (c) 2024, xplshn, sweetbbak, u-root and contributors  [3BSD]
+// Copyright (c) 2024, xplshn, u-root and contributors  [3BSD]
 // For more details refer to https://github.com/xplshn/a-utils
 //
 // This `ed` is intended to be a feature-complete mimick of [GNU Ed](https://www.gnu.org/software/ed//).  It is a close enough mimick that the [GNU Ed Man Page](https://www.gnu.org/software/ed/manual/ed_manual.html) should be a reliable source of documentation.  Divergence from the man page is generally considered a bug (unless it's an added feature).
@@ -29,43 +29,48 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"a-utils/pkg/ccmd"
 )
 
 // flags
 var (
 	fsuppress bool
 	fprompt   string
-	usage     = `
- Copyright (c) 2024, xplshn, u-root and contributors [3BSD]
- For more details refer to https://github.com/xplshn/a-utils
+	cmdInfo   = &ccmd.CmdInfo{
+		Authors:     []string{"xplshn"},
+		Name:        "ed",
+		Synopsis:    "[-s] [-p <prompt>] [file]",
+		Description: "The standard Unix text editor",
+		Behavior:    "",
+		Notes: `Known Differences:
+ - 'ed' uses go's 'regexp' package, and as such may have a somewhat different regular expression syntax. Note, however, that backreferences follow the 'ed' syntax of '\\<ref>', not the 'go' syntax of '$<ref>'.
+ - 'ed' does not support "traditional" mode.
+ - Rather than being an error, the 'g' option for 's' simply overrides any specified count.
 
-  Description
-    The standard Unix text editor
-  Synopsis
-    ed [-s] [-p <prompt>] [file]
-  Known Differences
-    - 'ed' uses go's 'regexp' package, and as such may have a somewhat different regular expression syntax.  Note, however, that backreferences follow the 'ed' syntax of '\<ref>', not the 'go' syntax of '$<ref>'.
-    - 'ed' does not support "traditional" mode
-    - Rather than being an error, the 'g' option for 's' simply overrides any specified count.
-  Implemented Features
-    - Full line address parsing (including RE and markings)
-    - Implemented commands: !, #, =, E, H, P, Q, W, a, c, d, e, f, h, i, j, k, l, m, n, p, q, r, s, t, u, w, x, y, z
-    - Syntax highlighting: _
-  Not Yet Implemented or Incomplete
-    - Unimplemented commands: g, G, v, V
-    - Does not (yet) support "loose" mode
-    - Does not (yet) support "restricted" mode
-  Options:
-    -s          Suppress counts
-    -p [prompt] Specify a command prompt
+Implemented Features:
+ - Full line address parsing (including RE and markings)
+ - Implemented commands: !, #, =, E, H, P, Q, W, a, c, d, e, f, h, i, j, k, l, m, n, p, q, r, s, t, u, w, x, y, z
+ - Syntax highlighting: _
 
-`
+Not Yet Implemented or Incomplete:
+ - Unimplemented commands: g, G, v, V
+ - Does not (yet) support "loose" mode
+ - Does not (yet) support "restricted" mode.`,
+	}
 )
 
 func init() {
 	flag.BoolVar(&fsuppress, "s", false, "suppress counts")
 	flag.StringVar(&fprompt, "p", "*", "specify a command prompt")
-	flag.Usage = func() { fmt.Print(usage) }
+	flag.Usage = func() {
+		helpPage, err := cmdInfo.GenerateHelpPage()
+		if err != nil {
+			fmt.Printf("Error generating help page: %v\n", err)
+			return
+		}
+		fmt.Print(helpPage)
+	}
 }
 
 // current FileBuffer

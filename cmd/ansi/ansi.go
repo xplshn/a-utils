@@ -1,4 +1,4 @@
-// Copyright (c) 2024, xplshn, sweetbbak, u-root and contributors  [3BSD]
+// Copyright (c) 2024-2024 xplshn, sweetbbak, u-root and contributors  [3BSD]
 // For more details refer to https://github.com/xplshn/a-utils
 package main
 
@@ -10,6 +10,8 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"a-utils/pkg/ccmd"
 )
 
 var commands = map[string]string{
@@ -101,22 +103,23 @@ func ansi(w io.Writer, args []string, text string) error {
 }
 
 func main() {
-	list := flag.Bool("l", false, "list available commands")
+	cmdInfo := &ccmd.CmdInfo{
+		Authors:     []string{"xplshn", "sweetbbak", "u-root"},
+		Name:        "ansi",
+		Synopsis:    "<--text|--list|--output> [name]...",
+		Description: "Print ansi escape sequences.",
+		Notes:       "For more details refer to https://github.com/xplshn/a-utils",
+	}
+	list := flag.Bool("list", false, "list available commands")
 	text := flag.String("text", "", "Wrap text around attributes")
-	flag.Usage = func() {
-		p := `
- Copyright (c) 2024, xplshn, sweetbbak, u-root and contributors [3BSD]
- For more details refer to https://github.com/xplshn/a-utils
 
-  Description
-    Print ansi escape sequences.
-  Synopsis:
-    ansi <--text|--list|--output> [name]...
-  Options:
-    --text: wraps text around options that require a 'reset' at the end. Namely colors, among other attributes.
-    --list: provides a list of the available ansi escape sequences.
-`
-		fmt.Println(p)
+	flag.Usage = func() {
+		helpPage, err := cmdInfo.GenerateHelpPage()
+		if err != nil {
+			fmt.Printf("Error generating help page: %v\n", err)
+			return
+		}
+		fmt.Print(helpPage)
 	}
 	flag.Parse()
 

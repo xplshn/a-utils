@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"a-utils/pkg/ccmd"
 	"github.com/liamg/tml"
 )
 
@@ -75,66 +76,69 @@ func getRandomFortuneFile(fortunePath string) (string, error) {
 	return files[rand.Intn(len(files))], nil
 }
 
-// parseArgs parses the command line arguments and environment variables
-func parseArgs() (string, error) {
-	var fortuneFile string
-	var fortunePath string
-
-	flag.StringVar(&fortuneFile, "file", "", "Path to the fortune file")
-	flag.StringVar(&fortunePath, "path", "", "Colon-separated list of directories containing fortune files")
-	DisplayVersion := flag.Bool("version", false, "Display the version of this implementation")
-	flag.Usage = func() {
-		p := `
- Copyright (c) 2024, xplshn [3BSD]
- For more details refer to https://github.com/xplshn/a-utils
-
-  Description
-    Provide a quote from a "cookie file"
-  Synopsis:
-    fortune <--file|--path [file||directory]|--version>
-  Options:
-    --file: will read the provided file and echo a quote from it
-    --list: will randomly select a file from within this directory and immeadiately return a quote from it
-    --version: will display the version of this program
-`
-		fmt.Println(p)
+func main() {
+	cmdInfo := ccmd.CmdInfo{
+		Authors:     []string{"xplshn"},
+		Name:        "fortune",
+		Synopsis:    "<--file|--path|--version>",
+		Usage:       "<--file|--path|--version>",
+		Description: "Provide a quote from a \"cookie file\"",
+		Behavior:    "If no directory or file is provided, fortune uses FORTUNE_FILE or FORTUNE_PATH environment variables. It will fail if neither arguments nor these variables are set.",
 	}
+
+	helpPage, err := cmdInfo.GenerateHelpPage()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error generating help page:", err)
+		os.Exit(1)
+	}
+
+	flag.Usage = func() {
+		fmt.Print(helpPage)
+	}
+
+	// Define flags
+	fortuneFile := flag.String("file", "", "Path to the fortune file")
+	fortunePath := flag.String("path", "", "Colon-separated list of directories containing fortune files")
+	displayVersion := flag.Bool("version", false, "Display the version of this implementation")
+
+	// Parse command-line arguments
 	flag.Parse()
 
-	if *DisplayVersion {
+	// Check for version flag
+	if *displayVersion {
 		fmt.Println("a-utils's Fortune implementation is currently at version:", Version)
-		os.Exit(5)
+		os.Exit(0)
 	}
 
-	if fortuneFile != "" && fortunePath != "" {
-		return "", fmt.Errorf("cannot use both -file and -path options at the same time")
+	// Determine fortune file to use
+	if *fortuneFile != "" && *fortunePath != "" {
+		die("cannot use both --file and --path options at the same time")
 	}
 
-	if fortuneFile == "" && fortunePath == "" {
-		fortuneFile = os.Getenv("FORTUNE_FILE")
-		fortunePath = os.Getenv("FORTUNE_PATH")
+	if *fortuneFile == "" && *fortunePath == "" {
+		*fortuneFile = os.Getenv("FORTUNE_FILE")
+		*fortunePath = os.Getenv("FORTUNE_PATH")
 	}
 
-	if fortuneFile != "" {
-		return fortuneFile, nil
+	if *fortuneFile != "" {
+		err := findAndPrint(*fortuneFile)
+		if err != nil {
+			die(err.Error())
+		}
+		return
 	}
 
-	if fortunePath != "" {
-		return getRandomFortuneFile(fortunePath)
+	if *fortunePath != "" {
+		file, err := getRandomFortuneFile(*fortunePath)
+		if err != nil {
+			die(err.Error())
+		}
+		err = findAndPrint(file)
+		if err != nil {
+			die(err.Error())
+		}
+		return
 	}
 
-	return "", fmt.Errorf("no fortune file specified and no FORTUNE_FILE or FORTUNE_PATH environment variable set")
-}
-
-// main is the entry point of the program
-func main() {
-	fortuneFile, err := parseArgs()
-	if err != nil {
-		die(err.Error())
-	}
-
-	err = findAndPrint(fortuneFile)
-	if err != nil {
-		die(err.Error())
-	}
+	die("no fortune file specified and no FORTUNE_FILE or FORTUNE_PATH environment variable set")
 }

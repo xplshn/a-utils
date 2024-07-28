@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2024 xplshn						[3BSD]
+// For more details refer to https://github.com/xplshn/a-utils
 package main
 
 import (
@@ -10,6 +12,8 @@ import (
 	"net/url"
 	"os"
 	"time"
+
+	"a-utils/pkg/ccmd"
 )
 
 const (
@@ -89,32 +93,28 @@ func main() {
 	quietVersion := flag.Bool("q", false, "Quiet version")
 	noTermSeqs := flag.Bool("T", false, "Switch terminal sequences off")
 	disableDefaults := flag.Bool("nd", false, "Disable default options")
-	flag.Usage = func() {
-		p := `
- Copyright (c) 2024, xplshn [3BSD]
- For more details refer to https://github.com/xplshn/a-utils
 
-  Description
-    Make a request to the online service wttr.in, which provides weather information
-  Synopsis:
-    wttr [--location] <[-0|-na|-nd|-T|-q|-n|-d|-2|-1|-Q]>
-  Options:
-    --location <city>       Specify the location for the weather report. [!]
-    -0                      Display only the current weather.
-    -Q                      Enable the super quiet version, showing minimal information.
-    -1                      Display the current weather and today's forecast.
-    -2                      Display the current weather, today's, and tomorrow's forecast.
-    -d                      Restrict output to standard console font glyphs.
-    -n                      Enable the narrow version, with a compact output format.
-    -q                      Enable the quiet version, showing limited information.
-    -T                      Disable terminal sequences.
-    -nd                     Disable default options.
-    -na                     Request non-ANSI output format (HTML).
-`
-		fmt.Println(p)
+	cmdInfo := ccmd.CmdInfo{
+		Authors:     []string{"xplshn"},
+		Name:        "wttr",
+		Synopsis:    "<--location> <[-0|-na|-nd|-T|-q|-n|-d|-2|-1|-Q]>",
+		Description: "Make a request to the online service wttr.in, which provides weather information",
+		Behavior:    "Use the specified flags to customize the output of the weather report.",
 	}
-	flag.Parse()
 
+	// Generate the help page
+	helpPage, err := cmdInfo.GenerateHelpPage()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error generating help page:", err)
+		os.Exit(1)
+	}
+
+	// Set the custom usage function
+	flag.Usage = func() {
+		fmt.Print(helpPage)
+	}
+
+	flag.Parse()
 	// Determine if any flags other than the location were provided, if so, no default flags are used
 	otherFlagsSet := flag.NFlag() > 1 || *disableDefaults
 

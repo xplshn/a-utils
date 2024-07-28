@@ -5,3 +5,4 @@ pelf        -> https://github.com/xplshn/pelf
 bigdl       -> https://github.com/xplshn/bigdl     -< -b sid --filter=blob:none -><- log_warning "Branch 'sid' of 'bigdl' is experimental"
 britto      -> https://github.com/xplshn/Britto
 cpu         -> https://github.com/u-root/cpu
+tree        -> https://github.com/a8m/tree
