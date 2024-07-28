@@ -77,9 +77,8 @@ func getCurrentTTYorTERM() string {
 	currentTTY := determineIfTTY(os.Stdout)
 	if currentTTY != "" {
 		return currentTTY
-	} else {
-		return determineIfTerm()
 	}
+	return determineIfTerm()
 }
 
 func getCurrentTime() string {
