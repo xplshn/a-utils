@@ -44,7 +44,7 @@ func main() {
 
 func run(stdin io.Reader, stdout io.Writer, args ...string) error {
 	if len(args) == 0 {
-		return processInput(stdin, stdout, "stdin")
+		return highlightCat(stdin, stdout, "stdin")
 	}
 
 	for _, file := range args {
@@ -59,15 +59,11 @@ func run(stdin io.Reader, stdout io.Writer, args ...string) error {
 			defer f.Close()
 			reader = f
 		}
-		if err := processInput(reader, stdout, file); err != nil {
+		if err := highlightCat(reader, stdout, file); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func processInput(reader io.Reader, writer io.Writer, fileName string) error {
-	return highlightCat(reader, writer, fileName)
 }
 
 func highlightCat(reader io.Reader, writer io.Writer, fileName string) error {
