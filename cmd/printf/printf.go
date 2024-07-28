@@ -1,33 +1,5 @@
-// Copyright 2013-2024 the u-root Authors. All rights reserved
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-// SYNOPSIS
-//
-//	printf format [arg ...]
-
-// DESCRIPTION
-//
-//	printf writes formatted data according to format using each arg until
-//	drained.
-//
-//	printf interprets the standard escape sequences \\, \', \", \a, \b, \e,
-//	\f, \n, \r, \t, \v, \xH[H], \O[OOO], the sequence \c, which terminates
-//	further output if it's found inside format or a %b format string, the
-//	format specification %b for an unescaped string and all C printf(3)
-//	format specifications ending with csdiouxXaAeEfFgG, including variable
-//	width and precision.
-
-// STANDARDS
-//
-//	The printf utility is compliant with the p1003.1-2013 specification.
-//
-//	The possibility of specifying 4-digit octals is an extension to that
-//	specification.
-
-// Author
-//
-// xplshn
+// Copyright (c) 2024-2024 xplshn, sweetbbak, u-root and contributors  [3BSD]
+// For more details refer to https://github.com/xplshn/a-utils
 package main
 
 import (
