@@ -1,5 +1,3 @@
-// Copyright (c) 2024-2024 xplshn                       [3BSD]
-// For more details refer to https://github.com/xplshn/a-utils
 package main
 
 import (
@@ -23,7 +21,7 @@ func main() {
 		Name:        "ccat",
 		Authors:     []string{"xplshn"},
 		Description: "Concatenates files and prints them to stdout with Syntax Highlighting",
-		Synopsis:    "<|--styles|> [FILE/s]",
+		Synopsis:    "<|--styles|--style [SYTHX_FILE]|> [FILE/s]",
 		Behavior:    "If no files are specified, read from stdin.",
 		Notes:       "The following env variables allow you to set the Style and Formatter to be used:\n  A_SYHX_COLOR_SCHEME: string: Acceptable values include any of the lines that `--styles` outputs\n  A_SYHX_FORMATTER: string: Acceptable values include: terminal8, terminal16 and terminal256\n",
 	}
@@ -38,6 +36,7 @@ func main() {
 	}
 
 	stylesFlag := flag.Bool("styles", false, "List available styles")
+	styleFile := flag.String("style", "", "Load custom style from file")
 	flag.Parse()
 
 	if *stylesFlag {
@@ -48,16 +47,46 @@ func main() {
 		return
 	}
 
+	var customStyleName string
+	if envStyleFile := os.Getenv("A_SYHX_CUSTOM_COLOR_SCHEME"); envStyleFile != "" {
+		*styleFile = envStyleFile
+	}
+	if *styleFile != "" {
+		var err error
+		customStyleName, err = loadCustomStyle(*styleFile)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error loading custom style:", err)
+			os.Exit(1)
+		}
+	}
+
 	args := flag.Args()
-	if err := run(os.Stdin, os.Stdout, args...); err != nil {
+	if err := run(os.Stdin, os.Stdout, customStyleName, args...); err != nil {
 		fmt.Fprintln(os.Stderr, "cat failed:", err)
 		os.Exit(1)
 	}
 }
 
-func run(stdin io.Reader, stdout io.Writer, args ...string) error {
+func loadCustomStyle(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open style file %s: %v", filePath, err)
+	}
+	defer file.Close()
+
+	style, err := chroma.NewXMLStyle(file)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse style file %s: %v", filePath, err)
+	}
+
+	styles.Register(style)
+	fmt.Printf("Loaded custom style: %s\n", style.Name)
+	return style.Name, nil
+}
+
+func run(stdin io.Reader, stdout io.Writer, customStyleName string, args ...string) error {
 	if len(args) == 0 {
-		return highlightCat(stdin, stdout, "stdin")
+		return highlightCat(stdin, stdout, "stdin", customStyleName)
 	}
 
 	for _, file := range args {
@@ -72,14 +101,14 @@ func run(stdin io.Reader, stdout io.Writer, args ...string) error {
 			defer f.Close()
 			reader = f
 		}
-		if err := highlightCat(reader, stdout, file); err != nil {
+		if err := highlightCat(reader, stdout, file, customStyleName); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func highlightCat(reader io.Reader, writer io.Writer, fileName string) error {
+func highlightCat(reader io.Reader, writer io.Writer, fileName string, customStyleName string) error {
 	contents, err := io.ReadAll(reader)
 	if err != nil {
 		return err
@@ -95,15 +124,21 @@ func highlightCat(reader io.Reader, writer io.Writer, fileName string) error {
 	}
 	lexer = chroma.Coalesce(lexer)
 
-	style := styles.Get(os.Getenv("A_SYHX_COLOR_SCHEME"))
-	if style == nil {
-		style = styles.Fallback
+	var style *chroma.Style
+	if customStyleName != "" {
+		style = styles.Get(customStyleName)
+	} else {
+		style = styles.Get(os.Getenv("A_SYHX_COLOR_SCHEME"))
+		if style == nil {
+			style = styles.Fallback
+		}
 	}
 
 	formatterName := os.Getenv("A_SYHX_FORMATTER")
 	if formatterName == "" {
 		formatterName = "terminal16"
 	}
+
 	formatter := formatters.Get(formatterName)
 	if formatter == nil {
 		formatter = formatters.Fallback
