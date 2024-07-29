@@ -13,6 +13,106 @@ import (
 	"a-utils/pkg/ccmd"
 )
 
+// Main function
+func main() {
+	args := os.Args[1:]
+	if len(args) == 0 {
+		printHelp()
+		os.Exit(0)
+	}
+
+	if len(args) > 4 {
+		fmt.Fprintf(os.Stderr, "too many arguments\n")
+		os.Exit(1)
+	}
+
+	result := performTest(args)
+	if result {
+		os.Exit(0)
+	}
+	os.Exit(1)
+}
+
+// Perform test based on arguments
+func performTest(args []string) bool {
+	switch len(args) {
+	case 0:
+		return false
+	case 1:
+		return isNonEmptyString(args[0])
+	case 2:
+		if args[0] == "!" {
+			return !performTest(args[1:])
+		}
+		if fn, ok := fileTests[args[0]]; ok {
+			return fn(args[1])
+		}
+		fmt.Fprintf(os.Stderr, "bad unary test %s\n", args[0])
+		return false
+	case 3:
+		if fn, ok := binaryTests[args[1]]; ok {
+			return fn(args[0], args[2])
+		}
+		if args[0] == "!" {
+			return !performTest(args[1:])
+		}
+		fmt.Fprintf(os.Stderr, "bad binary test %s\n", args[1])
+		return false
+	case 4:
+		if args[0] == "!" {
+			return !performTest(args[1:])
+		}
+		fmt.Fprintf(os.Stderr, "too many arguments\n")
+		return false
+	default:
+		return false
+	}
+}
+
+// Print help message
+func printHelp() {
+	cmdInfo := &ccmd.CmdInfo{
+		Authors:     []string{"xplshn"},
+		Name:        "test",
+		Synopsis:    "[-bcdefghkLprSsuwx PATH] [-nz STRING] [-t FD] [X ?? Y]",
+		Description: "Return true or false by performing tests. No arguments is false, one argument is true if not empty string.",
+		Notes: `--- Tests with a single argument (after the option):
+PATH is/has:
+  -b  block device   -f  regular file   -p  fifo           -u  setuid bit
+  -c  char device    -g  setgid         -r  readable       -w  writable
+  -d  directory      -h  symlink        -S  socket         -x  executable
+  -e  exists         -L  symlink        -s  nonzero size   -k  sticky bit
+STRING is:
+  -n  nonzero size   -z  zero size
+FD (integer file descriptor) is:
+  -t  a TTY
+
+--- non-POSIX tests: '-k', '[[' '<' '>' '=~' ']]'
+
+--- Tests with one argument on each side of an operator:
+Two strings:
+  =  are identical   !=  differ         =~  string matches regex
+Alphabetical sort:
+  <  first is lower  >   first higher
+Two integers:
+  -eq  equal         -gt  first > second    -lt  first < second
+  -ne  not equal     -ge  first >= second   -le  first <= second
+Two files:
+  -ot  Older mtime   -nt  Newer mtime       -ef  same dev/inode
+
+--- Modify or combine tests:
+  ! EXPR     not (swap true/false)   EXPR -a EXPR    and (are both true)
+  ( EXPR )   evaluate this first     EXPR -o EXPR    or (is either true)`}
+	helpPage, err := cmdInfo.GenerateHelpPage()
+	if err != nil {
+		fmt.Printf("Error generating help page: %v\n", err)
+		return
+	}
+	fmt.Print(helpPage)
+}
+
+// Here be dragons ↴
+
 // intcmp compares two integer strings, handling negative and positive signs,
 // and taking into account the order of magnitude for comparison.
 func intcmp(a, b string) int {
@@ -301,101 +401,4 @@ var binaryTests = map[string]binaryTestFunc{
 	"=": stringsEqual, "!=": stringsNotEqual, "-eq": integersEqual, "-ne": integersNotEqual,
 	"-gt": integerGreaterThan, "-ge": integerGreaterOrEqual, "-lt": integerLessThan, "-le": integerLessOrEqual,
 	"-ot": fileOlderThan, "-nt": fileNewerThan, "-ef": filesEqual,
-}
-
-// Main function
-func main() {
-	args := os.Args[1:]
-	if len(args) == 0 || args[0] == "help" {
-		printHelp()
-		os.Exit(0)
-	}
-
-	if len(args) > 4 {
-		fmt.Fprintf(os.Stderr, "too many arguments\n")
-		os.Exit(1)
-	}
-
-	result := performTest(args)
-	if result {
-		os.Exit(0)
-	}
-	os.Exit(1)
-}
-
-// Perform test based on arguments
-func performTest(args []string) bool {
-	switch len(args) {
-	case 0:
-		return false
-	case 1:
-		return isNonEmptyString(args[0])
-	case 2:
-		if args[0] == "!" {
-			return !performTest(args[1:])
-		}
-		if fn, ok := fileTests[args[0]]; ok {
-			return fn(args[1])
-		}
-		fmt.Fprintf(os.Stderr, "bad unary test %s\n", args[0])
-		return false
-	case 3:
-		if fn, ok := binaryTests[args[1]]; ok {
-			return fn(args[0], args[2])
-		}
-		if args[0] == "!" {
-			return !performTest(args[1:])
-		}
-		fmt.Fprintf(os.Stderr, "bad binary test %s\n", args[1])
-		return false
-	case 4:
-		if args[0] == "!" {
-			return !performTest(args[1:])
-		}
-		fmt.Fprintf(os.Stderr, "too many arguments\n")
-		return false
-	default:
-		return false
-	}
-}
-
-// Print help message
-func printHelp() {
-	cmdInfo := &ccmd.CmdInfo{
-		Authors:     []string{"xplshn"},
-		Name:        "test",
-		Synopsis:    "[-bcdefghkLprSsuwx PATH] [-nz STRING] [-t FD] [X ?? Y]",
-		Description: "Return true or false by performing tests. No arguments is false, one argument is true if not empty string.",
-		Notes: `--- Tests with a single argument (after the option):
-PATH is/has:
-  -b  block device   -f  regular file   -p  fifo           -u  setuid bit
-  -c  char device    -g  setgid         -r  readable       -w  writable
-  -d  directory      -h  symlink        -S  socket         -x  executable
-  -e  exists         -L  symlink        -s  nonzero size   -k  sticky bit
-STRING is:
-  -n  nonzero size   -z  zero size
-FD (integer file descriptor) is:
-  -t  a TTY
-
---- Tests with one argument on each side of an operator:
-Two strings:
-  =  are identical   !=  differ         =~  string matches regex
-Alphabetical sort:
-  <  first is lower  >   first higher
-Two integers:
-  -eq  equal         -gt  first > second    -lt  first < second
-  -ne  not equal     -ge  first >= second   -le  first <= second
-Two files:
-  -ot  Older mtime   -nt  Newer mtime       -ef  same dev/inode
-
---- Modify or combine tests:
-  ! EXPR     not (swap true/false)   EXPR -a EXPR    and (are both true)
-  ( EXPR )   evaluate this first     EXPR -o EXPR    or (is either true)
-`}
-	helpPage, err := cmdInfo.GenerateHelpPage()
-	if err != nil {
-		fmt.Printf("Error generating help page: %v\n", err)
-		return
-	}
-	fmt.Print(helpPage)
 }
