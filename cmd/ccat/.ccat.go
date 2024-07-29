@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2024 xplshn                       [3BSD]
+// Copyright (c) 2024-2024 xplshn						[3BSD]
 // For more details refer to https://github.com/xplshn/a-utils
 package main
 
@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
-	"unicode"
 
 	"a-utils/pkg/ccmd"
 	"github.com/alecthomas/chroma/v2"
@@ -23,9 +21,8 @@ func main() {
 		Name:        "ccat",
 		Authors:     []string{"xplshn"},
 		Description: "Concatenates files and prints them to stdout with Syntax Highlighting",
-		Synopsis:    "<|--styles|> [FILE/s]",
+		Synopsis:    "[FILE/s]",
 		Behavior:    "If no files are specified, read from stdin.",
-		Notes:       "The following env variables allow you to set the Style and Formatter to be used:\n  A_SYHX_COLOR_SCHEME: string: Acceptable values include any of the lines that `--styles` outputs\n  A_SYHX_FORMATTER: string: Acceptable values include: terminal8, terminal16 and terminal256\n",
 	}
 
 	helpPage, err := cmdInfo.GenerateHelpPage()
@@ -37,17 +34,7 @@ func main() {
 		fmt.Print(helpPage)
 	}
 
-	stylesFlag := flag.Bool("styles", false, "List available styles")
 	flag.Parse()
-
-	if *stylesFlag {
-		fmt.Println("Available styles:")
-		for _, style := range styles.Names() {
-			fmt.Println(style)
-		}
-		return
-	}
-
 	args := flag.Args()
 	if err := run(os.Stdin, os.Stdout, args...); err != nil {
 		fmt.Fprintln(os.Stderr, "cat failed:", err)
@@ -80,33 +67,35 @@ func run(stdin io.Reader, stdout io.Writer, args ...string) error {
 }
 
 func highlightCat(reader io.Reader, writer io.Writer, fileName string) error {
-	contents, err := io.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-
-	// Sanitize input
-	sanitizedContents := sanitizeInput(string(contents))
-
-	// Detect the language from content
-	lexer := lexers.Analyse(sanitizedContents)
+	lexer := lexers.Match(fileName)
 	if lexer == nil {
 		lexer = lexers.Fallback
 	}
 	lexer = chroma.Coalesce(lexer)
 
-	style := styles.Get(os.Getenv("A_SYHX_COLOR_SCHEME"))
+	style := styles.Get("swapoff")
+	if style == nil {
+		style = styles.Get(os.Getenv("A_SYHX_COLOR_SCHEME"))
+	}
 	if style == nil {
 		style = styles.Fallback
 	}
 
-	formatterName := os.Getenv("A_SYHX_FORMATTER")
+	formatterName := os.Getenv("A_SYHX_FORMAT")
 	if formatterName == "" {
 		formatterName = "terminal16"
 	}
 	formatter := formatters.Get(formatterName)
 	if formatter == nil {
-		formatter = formatters.Fallback
+		formatter := formatters.Get("terminal16")
+		if formatter == nil {
+			formatter = formatters.Fallback
+		}
+	}
+
+	contents, err := io.ReadAll(reader)
+	if err != nil {
+		return err
 	}
 
 	iterator, err := lexer.Tokenise(nil, string(contents))
@@ -121,14 +110,4 @@ func highlightCat(reader io.Reader, writer io.Writer, fileName string) error {
 
 	_, err = io.Copy(writer, &buf)
 	return err
-}
-
-func sanitizeInput(input string) string {
-	var sanitized strings.Builder
-	for _, r := range input {
-		if unicode.IsPrint(r) && !unicode.IsControl(r) {
-			sanitized.WriteRune(r)
-		}
-	}
-	return sanitized.String()
 }

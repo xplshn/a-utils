@@ -1,32 +1,39 @@
-// Copyright (c) 2024-2024 xplshn						[3BSD]
+// Copyright (c) 2024-2024 xplshn                       [3BSD]
 // For more details refer to https://github.com/xplshn/a-utils
 package main
 
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"regexp"
 
 	"a-utils/pkg/ccmd"
 )
 
-func removeAnsi(content string) string {
-	// Regular expression to match ANSI escape sequences, avoiding ";" when not needed.
+// removeAnsiSequences removes ANSI escape sequences from the given content.
+func removeAnsiSequences(content string) string {
 	ansiEscape := regexp.MustCompile(`\x1b\[[0-9]*(?:;[0-9]*)*[a-zA-Z]`)
 	return ansiEscape.ReplaceAllString(content, "")
 }
 
-func makeVisible(content string) string {
-	// Replace non-printable characters with their visible representations
+// makeNonPrintableVisible converts non-printable characters to a visible format.
+func makeNonPrintableVisible(content string, showTabs bool, showEndLines bool) string {
 	visibleContent := ""
-	for _, char := range content {
+	for i, char := range content {
 		switch char {
 		case '\n':
 			visibleContent += "\n"
+			if showEndLines && i != len(content)-1 {
+				visibleContent += "$"
+			}
 		case '\t':
-			visibleContent += "\t"
+			if showTabs {
+				visibleContent += "^I"
+			} else {
+				visibleContent += "\t"
+			}
 		default:
 			if char < ' ' || char == '\x7f' {
 				visibleContent += fmt.Sprintf("^%c", char+'@')
@@ -35,34 +42,63 @@ func makeVisible(content string) string {
 			}
 		}
 	}
+	if showEndLines && len(content) > 0 && content[len(content)-1] == '\n' {
+		visibleContent += "$"
+	}
 	return visibleContent
 }
 
-func printFileWithOptions(filename string, removeAnsiFlag bool, showAnsiFlag bool) {
-	content, err := ioutil.ReadFile(filename)
+// processFile reads the file content, processes it according to the flags, and writes the result to the output.
+func processFile(reader io.Reader, writer io.Writer, removeAnsiFlag bool, showNonPrintable bool, showTabs bool, showEndLines bool) error {
+	content, err := io.ReadAll(reader)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading file %s: %v\n", filename, err)
-		return
+		return fmt.Errorf("error reading input: %v", err)
 	}
 
 	var finalContent string
 	if removeAnsiFlag {
-		finalContent = removeAnsi(string(content))
-	} else if showAnsiFlag {
-		finalContent = string(content)
+		finalContent = removeAnsiSequences(string(content))
+	} else if showNonPrintable {
+		finalContent = makeNonPrintableVisible(string(content), showTabs, showEndLines)
 	} else {
-		finalContent = makeVisible(string(content))
+		finalContent = string(content)
 	}
 
-	fmt.Println(finalContent)
+	_, err = writer.Write([]byte(finalContent))
+	return err
+}
+
+// run processes each file provided in args or reads from stdin if no files are specified.
+func run(stdin io.Reader, stdout io.Writer, args []string, removeAnsiFlag bool, showNonPrintable bool, showTabs bool, showEndLines bool) error {
+	if len(args) == 0 {
+		return processFile(stdin, stdout, removeAnsiFlag, showNonPrintable, showTabs, showEndLines)
+	}
+
+	for _, file := range args {
+		var reader io.Reader
+		if file == "-" {
+			reader = stdin
+		} else {
+			f, err := os.Open(file)
+			if err != nil {
+				return fmt.Errorf("failed to open file %s: %v", file, err)
+			}
+			defer f.Close()
+			reader = f
+		}
+		if err := processFile(reader, stdout, removeAnsiFlag, showNonPrintable, showTabs, showEndLines); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func main() {
 	cmdInfo := &ccmd.CmdInfo{
 		Authors:     []string{"xplshn"},
 		Name:        "catv",
-		Synopsis:    "<|-r|-s|> [FILE/s]",
-		Description: "Provides a non-harmful way to remove ANSI escape sequences and make non-printable characters visible from the specified files.",
+		Synopsis:    "<|-v|-t|-e|-r|-A|> [FILE/s]",
+		Description: "Provides a non-harmful way to make non-printable characters visible from the specified files",
 	}
 
 	helpPage, err := cmdInfo.GenerateHelpPage()
@@ -72,18 +108,30 @@ func main() {
 	}
 
 	removeAnsiFlag := flag.Bool("r", false, "Remove ANSI escape sequences")
-	showAnsiFlag := flag.Bool("s", false, "Show ANSI escape sequences without interpreting them")
+	showNonPrintable := flag.Bool("v", false, "Show non-printing characters as ^x or M-x")
+	showTabs := flag.Bool("t", false, "Show tabs as ^I")
+	showEndLines := flag.Bool("e", false, "Show end of lines with $")
+	showAll := flag.Bool("A", false, "Same as -vte")
 
 	flag.Usage = func() { fmt.Print(helpPage) }
+
 	flag.Parse()
 
-	if flag.NArg() < 1 {
-		fmt.Fprint(os.Stderr, helpPage)
-		fmt.Fprintln(os.Stderr, "error: no valid arguments were provided.")
-		return
+	args := flag.Args()
+
+	// If no flags are used, set showNonPrintable to true
+	if !*removeAnsiFlag && !*showTabs && !*showEndLines && !*showAll {
+		*showNonPrintable = true
 	}
 
-	for _, filename := range flag.Args() {
-		printFileWithOptions(filename, *removeAnsiFlag, *showAnsiFlag)
+	if *showAll {
+		*showNonPrintable = true
+		*showTabs = true
+		*showEndLines = true
+	}
+
+	if err := run(os.Stdin, os.Stdout, args, *removeAnsiFlag, *showNonPrintable, *showTabs, *showEndLines); err != nil {
+		fmt.Fprintln(os.Stderr, "catv failed:", err)
+		os.Exit(1)
 	}
 }
