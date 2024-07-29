@@ -11,9 +11,10 @@ Also, I got bored, so I started writting utilities for fun.
 #### Objectives
 - Implement commands that are specific to SunOS/Solaris/Illumos/Plan9/OtherNonGNUThings.
 - BSD commands that aren't in the spirit of BSD (bloat) should be implemented.
-- Use "flag files", whenever feasible and in places that make sense. https://github.com/u-root/u-root/blob/pkg/uflag/flagfile.go
+- Use "flag files", whenever feasible and in places that make sense. https://github.com/u-root/u-root/blob/pkg/uflag/flagfile.go. Config files suck.
 - The output of commands should be pretty, distinguishable and easy to follow-up if you've been in the terminal for way too much time, colors and other ANSI atributes should be used. Programs should not however use these special atributes when their output is being captured/redirected.
 - Transforming extended flags of commands, like BSD's cat -v, into independent programs that execute the specific functionalities of those flags, so as to keep Unix clones in the spirit of Unix.
+- Extend Unix commands without using flags nor changing behavior. For example, I might add colors to enhance the readability of some commands, but have that automatically turn off when our output is being piped or captured by/into another program.
 
 ##### Rules
 1. Avoid repetition. Won't implement commands which's functionality could be reduced to piping 2 or 3 commands together
