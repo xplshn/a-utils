@@ -28,6 +28,7 @@ I am very much against bloat, but I enjoy challenges, which translates into me i
 
 ##### Screenshots?
 ![image](https://github.com/user-attachments/assets/49469f2b-0ffc-4f81-961a-c08d5b470af1)
+![image](https://github.com/user-attachments/assets/560dc83b-5354-4bf2-bf53-b110ab882237)
 
 ##### Future:
  - Should this project adopt all of U-Root's commands and improve upon them? Or should `a-utils`
