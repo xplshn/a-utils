@@ -1,0 +1,3 @@
+[submodule "cmd/sed"]
+	path = cmd/sed
+	url = https://github.com/baldmountain/gosed
