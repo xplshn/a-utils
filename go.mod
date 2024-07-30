@@ -1,4 +1,4 @@
-module a-utils
+module github.com/xplshn/a-utils
 
 go 1.22.5
 

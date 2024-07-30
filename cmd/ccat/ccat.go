@@ -11,11 +11,11 @@ import (
 	"strings"
 	"unicode"
 
-	"a-utils/pkg/ccmd"
 	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/formatters"
 	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/alecthomas/chroma/v2/styles"
+	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 func main() {

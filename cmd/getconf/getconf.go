@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"a-utils/pkg/ccmd"
 	"github.com/tklauser/go-sysconf"
+	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 var sysconfVars = map[string]int{

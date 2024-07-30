@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"a-utils/pkg/ccmd"
 	"github.com/liamg/tml"
+	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 /* | fortune is a minimalistic implementation of the `fortune` program we all know

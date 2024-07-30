@@ -9,7 +9,7 @@ import (
 	"os"
 	"regexp"
 
-	"a-utils/pkg/ccmd"
+	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 // removeAnsiSequences removes ANSI escape sequences from the given content.

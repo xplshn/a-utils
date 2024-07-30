@@ -13,7 +13,7 @@ import (
 	"os"
 	"time"
 
-	"a-utils/pkg/ccmd"
+	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 const (

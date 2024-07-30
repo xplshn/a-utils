@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/formatters"
@@ -91,6 +92,7 @@ func cmdQuit(ctx *Context) (e error) {
 	return errExit
 }
 
+// --xplshn: TODO: Figure out why using syntax highlighting garbles newlines on comments sometimes, I've noticed it when EDiting .go files
 func cmdPrint(ctx *Context) (err error) {
 	var addrRange [2]int
 
@@ -101,50 +103,63 @@ func cmdPrint(ctx *Context) (err error) {
 
 	for lineNumber := addrRange[0]; lineNumber <= addrRange[1]; lineNumber++ {
 		if ctx.cmd[ctx.cmdOffset] == 'n' {
-			_, err = io.WriteString(ctx.out, strconv.Itoa(lineNumber+1)+"\t")
-			if err != nil {
-				return
-			}
+			fmt.Fprintf(ctx.out, "%d\t", lineNumber+1)
 		}
 
 		lineContent := buffer.GetMust(lineNumber, true)
 		if ctx.cmd[ctx.cmdOffset] == 'l' {
-			lineContent += "$" // TODO: Handle more escaping as per the man pages, if necessary
-		}
+			lineContent += "$" // TODO: the man pages describes more escaping, but it's not clear what GNU ed actually does.
+		} // --xplshn: Ofc it is, its GNU! The code was accidentally obfuscated!
 
 		// Detect language and highlight code
 		if state.syntaxHighlighting {
+			// Declare our private functions
+			sanitizeInput := func(input string) string {
+				var sanitized strings.Builder
+				for _, r := range input {
+					if unicode.IsPrint(r) && !unicode.IsControl(r) {
+						sanitized.WriteRune(r)
+					}
+				}
+				return sanitized.String()
+			}
+			// E-OF-DECLARE-OUR-PRIVATE-FUNCTIONS
+
+			// Sanitize input
+			sanitizedContents := sanitizeInput(lineContent)
+			// Detect the language from filename
 			lexer := lexers.Match(state.fileName)
+			if lexer == nil {
+				// If filename detection fails, detect the language from the file's contents
+				lexer = lexers.Analyse(sanitizedContents)
+			}
 			if lexer == nil {
 				lexer = lexers.Fallback
 			}
 			lexer = chroma.Coalesce(lexer)
 
-			style := styles.Get(os.Getenv("A_SYHX_COLOR_SCHEME"))
-			if style == nil {
-				style = styles.Fallback
+			var style *chroma.Style
+			if state.syntaxHighlightingStyleName != "" {
+				style = styles.Get(state.syntaxHighlightingStyleName)
+			} else {
+				style = styles.Get(os.Getenv("A_SYHX_COLOR_SCHEME"))
+				if style == nil {
+					style = styles.Fallback
+				}
 			}
 
-			formatterName := os.Getenv("A_SYHX_FORMAT")
+			formatterName := os.Getenv("A_SYHX_FORMATTER")
 			if formatterName == "" {
-				formatterName = "terminal16" // Use a default formatter name if the environment variable is not set
+				formatterName = "terminal16"
 			}
+
 			formatter := formatters.Get(formatterName)
 			if formatter == nil {
 				formatter = formatters.Fallback
 			}
 
-			// Create a reader from the line content
-			lineReader := strings.NewReader(lineContent)
-
-			// Read all content from the reader
-			contents, readErr := io.ReadAll(lineReader)
-			if readErr != nil {
-				return readErr
-			}
-
 			// Tokenize the entire content
-			iterator, tokenizationErr := lexer.Tokenise(nil, string(contents))
+			iterator, tokenizationErr := lexer.Tokenise(nil, lineContent)
 			if tokenizationErr != nil {
 				return tokenizationErr
 			}
@@ -166,10 +181,7 @@ func cmdPrint(ctx *Context) (err error) {
 				return err
 			}
 		} else {
-			_, err = io.WriteString(ctx.out, lineContent+"\n")
-			if err != nil {
-				return
-			}
+			fmt.Fprintf(ctx.out, "%s\n", lineContent)
 		}
 	}
 	return
@@ -195,7 +207,67 @@ func cmdPrint(ctx *Context) (e error) {
 }
 */
 
+func loadCustomStyle(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open style file %s: %v", filePath, err)
+	}
+	defer file.Close()
+
+	style, err := chroma.NewXMLStyle(file)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse style file %s: %v", filePath, err)
+	}
+
+	styles.Register(style)
+	state.syntaxHighlightingStyleName = style.Name
+	return style.Name, nil
+}
+
 func cmdSyntaxHighlighting(ctx *Context) (e error) {
+	// Declare our private functions
+	contains := func(slice []string, item string) bool { // Helper function to check if a slice contains a string
+		for _, a := range slice {
+			if a == item {
+				return true
+			}
+		}
+		return false
+	}
+	// E-OF-DECLARE-OUR-PRIVATE-FUNCTIONS
+
+	// Extract the arguments from the command string
+	args := strings.TrimSpace(ctx.cmd[ctx.cmdOffset+1:])
+	if args != "" {
+		// If an  argument was provided; Extract such argument
+		arg := args
+		// Check if the argument is a valid file
+		if _, err := os.Stat(arg); err == nil {
+			// It's a valid file, load the custom style
+			styleName, err := loadCustomStyle(arg)
+			if err != nil {
+				fmt.Fprintf(ctx.out, "Error: %v\n", err)
+				return
+			}
+			fmt.Fprintf(ctx.out, "Loaded custom style: %s\n", styleName)
+			return
+		} else {
+			// It's not a valid file, check if it's a valid Chroma style name
+			validStyles := styles.Names()
+			if contains(validStyles, arg) {
+				// It's a valid Chroma style name, set the state
+				state.syntaxHighlightingStyleName = arg
+				fmt.Fprintf(ctx.out, "Set syntax highlighting style to: %s\n", arg)
+				return
+			} else {
+				// It's neither a valid file nor a valid Chroma style name
+				fmt.Fprintf(ctx.out, "Error: %s is not a valid file or Chroma style name\n", arg)
+				return
+			}
+		}
+	}
+
+	// Toggle syntax highlighting
 	state.syntaxHighlighting = !state.syntaxHighlighting
 	if state.syntaxHighlighting {
 		fmt.Fprintf(ctx.out, "Syntax highlighting enabled\n")

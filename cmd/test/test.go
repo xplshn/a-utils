@@ -10,7 +10,7 @@ import (
 	"strings"
 	"unicode"
 
-	"a-utils/pkg/ccmd"
+	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 // Main function

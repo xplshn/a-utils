@@ -30,7 +30,7 @@ import (
 	"log"
 	"os"
 
-	"a-utils/pkg/ccmd"
+	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 // flags
@@ -51,7 +51,7 @@ var (
 Implemented Features:
  - Full line address parsing (including RE and markings)
  - Implemented commands: !, #, =, E, H, P, Q, W, a, c, d, e, f, h, i, j, k, l, m, n, p, q, r, s, t, u, w, x, y, z
- - Syntax highlighting: _
+ - Syntax highlighting: _ <|pathToChromaStyle.xml|<styleName|>
 
 Not Yet Implemented or Incomplete:
  - Unimplemented commands: g, G, v, V
@@ -78,14 +78,15 @@ var buffer *FileBuffer
 
 // current ed state
 var state struct {
-	fileName           string // current filename
-	lastErr            error
-	printErr           bool
-	prompt             bool
-	syntaxHighlighting bool
-	winSize            int
-	lastRep            string
-	lastSub            string
+	fileName                    string // current filename
+	lastErr                     error
+	printErr                    bool
+	prompt                      bool
+	syntaxHighlighting          bool
+	syntaxHighlightingStyleName string
+	winSize                     int
+	lastRep                     string
+	lastSub                     string
 }
 
 // Parse input and execute command
@@ -134,8 +135,8 @@ func runEd(in io.Reader, out io.Writer, suppress bool, prompt, file string) erro
 			}
 		}
 	}
-	state.winSize = 22              // we don't actually support getting the real window size
-	state.syntaxHighlighting = true // default to true
+	state.winSize = 22               // we don't actually support getting the real window size
+	state.syntaxHighlighting = false // syntax highlighting is disabled by default, since it garbles newlines sometimes
 	inScan := bufio.NewScanner(in)
 	if state.prompt {
 		fmt.Fprintf(out, "%s", prompt)

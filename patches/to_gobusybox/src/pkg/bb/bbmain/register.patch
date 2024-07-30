@@ -1,0 +1,40 @@
+--- /home/anto/Documents/ItAll/gobusybox_master/src/pkg/bb/bbmain/register.go
++++ /home/anto/Documents/ItAll/gobusybox/src/pkg/bb/bbmain/register.go
+@@ -18,8 +18,27 @@
+ )
+ 
+ // ErrNotRegistered is returned by Run if the given command is not registered.
+-var ErrNotRegistered = errors.New("command is not present in busybox")
++//var ErrNotRegistered = errors.New("command is not present in busybox")
+ 
++var ErrNotRegistered = errors.New(`
++ Copyright (c) 2024: xplshn, and contributors
++ For more details refer to https://github.com/xplshn/a-utils
++
++  Synopsis
++    a-utils [program] <args>
++  Description:
++    a-utils multicall binary
++  Notes:
++    This binary is a multicall binary.
++    It contains various commands inside.
++    They can be accessed either by
++    symlinking this multicall binary to a file
++    with the name of the binary contained here
++    that you wish to use or by calling this binary
++    with it as the first argument.
++
++`)
++
+ // Noop is a noop function.
+ var Noop = func() {}
+ 
+@@ -71,7 +90,7 @@
+ 	} else if defaultCmd != nil {
+ 		cmd = defaultCmd
+ 	} else {
+-		return fmt.Errorf("%w: %s", ErrNotRegistered, name)
++		return fmt.Errorf("%w"+"\x1B[31merror\x1B[m: '%s' is not present in this multicall binary of a-utils", ErrNotRegistered, name)
+ 	}
+ 	cmd.init()
+ 	cmd.main()
