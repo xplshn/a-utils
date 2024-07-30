@@ -6,3 +6,4 @@ bigdl       -> https://github.com/xplshn/bigdl     -< -b sid --filter=blob:none 
 britto      -> https://github.com/xplshn/Britto
 cpu         -> https://github.com/u-root/cpu
 tree        -> https://github.com/a8m/tree
+eimg        -> https://github.com/xplshn/eimg
