@@ -14,7 +14,7 @@ import (
 )
 
 type CmdInfo struct {
-	Copyright    string
+	Repository   string
 	Authors      []string
 	Name         string
 	Synopsis     string // Either Synopsis or Usage must be set
@@ -96,7 +96,11 @@ func (ci *CmdInfo) GenerateHelpPage() (string, error) {
 		sb.WriteString(author + ", ")
 	}
 	sb.WriteString("and contributors\n")
-	sb.WriteString(" For more details refer to https://github.com/xplshn/a-utils\n")
+	if ci.Repository == "" {
+		sb.WriteString(" For more details refer to https://github.com/xplshn/a-utils\n")
+	} else {
+		sb.WriteString(fmt.Sprintf(" For more details refer to %s\n", ci.Repository))
+	}
 
 	// Synopsis or Usage
 	if ci.Synopsis != "" {
