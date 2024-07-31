@@ -22,7 +22,6 @@ Also, I got bored, so I started writting utilities for fun.
 
 #### TODO
 1. Implement interrupt channels (CTRL+C as defined behavior of the programs) in programs that may need them
-2. The `cat -x` flag in cat.go should be removed, the program for visualizing text with syntax highlighting should be `ccat`
 
 # ...
 I am very much against bloat, but I enjoy challenges, which translates into me implementing things I shouldn't and slapping the label "Feature" on-top. If you ever find a so called "feature" like this, do tell me why it is feature creep.
