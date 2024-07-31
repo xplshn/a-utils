@@ -47,7 +47,8 @@ I am very much against bloat, but I enjoy challenges, which translates into me i
 9. `hpwd`, an implementation of `pwd` that replaces your $HOME with a prefix such as `~` or something else. For use with PS1 on strict POSIX shells
 10. `wttr`, get's weather info from `wttr.in`
 11. `cal`, an implementation of the POSIX `cal` command, as described in the OpenBSD manpage, that strives to have the same alignment as Busybox's and has (or tries to have) the Toybox's `cal` option to highlight specified days
-12. `demo`, just a demo of the `ccmd` pkg/library
+12. `sed` implementation, didn't add extensions.
+13. `demo`, just a demo of the `ccmd` pkg/library
 
 ### Note on Building
 A-Utils utilizes build.sh for building utilities. This script checks for cbuild.sh in cloned repositories listed in extendC.b and executes them accordingly. For Go binaries, extendGo.b serves a similar purpose but doesn't require cbuild.sh. By default, ./build.sh builds utilities in the local ./cmd folder but can be adapted for other projects.
