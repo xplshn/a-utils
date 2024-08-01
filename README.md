@@ -2,7 +2,7 @@ The core utilities of https://github.com/xplshn/Andes.
 
 ### First-rate utilities for your Unix system!
 A-Utils is a growing set of utilities, some are meant to replace the ones you are using right now while others are simple commands that are great to have, like `wttr` or `issue`.
-The code in this repo is largely inspired by `u-root`, various commands like `ed` are direct modifications upon `u-root`'s implementations.
+The code in this repo is largely inspired by `u-root`, various commands like `ed` are direct modifications upon `u-root`'s implementations. A-Utils won't implement commands without any reason. If the command is already available in `u-root` and it is a suitable, POSIX compliant implementation, there isn't much reason to add it here without modifications.
 
 ## Why?
 I am tired of confusing BSD additions, GNU extension and flags added for compatibility with non-POSIX systems. I plan to implement every program that `u-root` lacks, or hasn't implemented as per the POSIX specifications, implementation deviations will be marked in the help pages/manual pages as a note stating: "This is NOT POSIX".
@@ -22,7 +22,6 @@ Also, I got bored, so I started writting utilities for fun.
 
 #### TODO
 1. Implement interrupt channels (CTRL+C as defined behavior of the programs) in programs that may need them
-2. The `cat -x` flag in cat.go should be removed, the program for visualizing text with syntax highlighting should be `ccat`
 
 # ...
 I am very much against bloat, but I enjoy challenges, which translates into me implementing things I shouldn't and slapping the label "Feature" on-top. If you ever find a so called "feature" like this, do tell me why it is feature creep.
@@ -48,7 +47,11 @@ I am very much against bloat, but I enjoy challenges, which translates into me i
 9. `hpwd`, an implementation of `pwd` that replaces your $HOME with a prefix such as `~` or something else. For use with PS1 on strict POSIX shells
 10. `wttr`, get's weather info from `wttr.in`
 11. `cal`, an implementation of the POSIX `cal` command, as described in the OpenBSD manpage, that strives to have the same alignment as Busybox's and has (or tries to have) the Toybox's `cal` option to highlight specified days
-12. `demo`, just a demo of the `ccmd` pkg/library
+12. `sed` implementation in Go, didn't add extensions.
+13. `demo`, just a demo of the `ccmd` pkg/library
+
+#### Contributions
+I am looking for contributors, in fact. I NEED THEM. This is an ambicious project. And if you wish to contribute, please do! By openning a PR here to add a POSIX compliant utility that you've implemented, or bringing up to my attention bugs in our programs.
 
 ### Note on Building
 A-Utils utilizes build.sh for building utilities. This script checks for cbuild.sh in cloned repositories listed in extendC.b and executes them accordingly. For Go binaries, extendGo.b serves a similar purpose but doesn't require cbuild.sh. By default, ./build.sh builds utilities in the local ./cmd folder but can be adapted for other projects.
