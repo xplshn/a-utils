@@ -20,6 +20,5 @@ go.work
 # Hidden file
 .*p*
 .*
-cmd/demo/
 built/
 extend/
