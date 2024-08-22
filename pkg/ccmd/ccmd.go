@@ -20,15 +20,14 @@ type CmdInfo struct {
 	Synopsis     string // Either Synopsis or Usage must be set
 	Usage        string // ------------------------------------
 	Description  string
-	Behavior     string          // Optional
-	Options      []string        // Optional
-	Notes        string          // Optional
-	ExcludeFlags map[string]bool // Tracks flags to exclude from help
-	Since        int             // When the project started. Used to print copyright as: (c) 2017-2024: xplshn and contributors
+	Options      []string          // Populated automatically
+	ExcludeFlags map[string]bool   // Tracks flags to exclude from help
+	Since        int               // Start year of the project
+	CustomFields map[string]string // Support for additional custom fields
 }
 
+// DefineFlag registers a command-line flag and tracks exclusion status.
 func (ci *CmdInfo) DefineFlag(name string, value interface{}, usage string, exclude bool) {
-	// Define the flag using the standard flag package
 	switch v := value.(type) {
 	case bool:
 		flag.Bool(name, v, usage)
@@ -53,52 +52,41 @@ func (ci *CmdInfo) DefineFlag(name string, value interface{}, usage string, excl
 	default:
 		panic("unsupported flag type")
 	}
-
-	// Track the flag and its exclusion status
 	ci.ExcludeFlags[name] = exclude
 }
 
+// PopulateOptions fills the Options slice based on registered flags.
 func (ci *CmdInfo) PopulateOptions() {
-	// Clear existing options
 	ci.Options = nil
-
 	flag.VisitAll(func(f *flag.Flag) {
-		// Determine if the flag is long or shorthand
-		var flagFormat string
-		if len(f.Name) == 1 {
-			flagFormat = fmt.Sprintf("-%s", f.Name)
-		} else {
-			flagFormat = fmt.Sprintf("--%s", f.Name)
-		}
 		if !ci.ExcludeFlags[f.Name] {
-			ci.Options = append(ci.Options, fmt.Sprintf("%s: %s", flagFormat, f.Usage))
+			prefix := "--"
+			if len(f.Name) == 1 {
+				prefix = "-"
+			}
+			ci.Options = append(ci.Options, fmt.Sprintf("%s%s: %s", prefix, f.Name, f.Usage))
 		}
 	})
 }
 
+// GenerateHelpPage creates a help page based on CmdInfo fields.
 func (ci *CmdInfo) GenerateHelpPage() (string, error) {
 	if ci.Name == "" || ci.Description == "" || (ci.Synopsis == "" && ci.Usage == "") {
-		return "", fmt.Errorf("mandatory fields missing: Name, Description, and either Synopsis or Usage must be set")
+		return "", fmt.Errorf("Name, Description, and either Synopsis or Usage must be set")
 	}
-
-	// Populate the options automatically based on the flags defined
 	ci.PopulateOptions()
 
-	var sb strings.Builder
+	sb := &strings.Builder{}
 
-	// Copyright
+	// Copyright and Authors
+	year := time.Now().Year()
 	if ci.Since > 0 {
-		sb.WriteString(fmt.Sprintf("\n Copyright (c) %d-%d: ", ci.Since, time.Now().Year()))
+		sb.WriteString(fmt.Sprintf("\n Copyright (c) %d-%d: ", ci.Since, year))
 	} else {
-		sb.WriteString(fmt.Sprintf("\n Copyright (c) %d: ", time.Now().Year()))
+		sb.WriteString(fmt.Sprintf("\n Copyright (c) %d: ", year))
 	}
-	for _, author := range ci.Authors {
-		sb.WriteString(author + ", ")
-	}
-	sb.WriteString("and contributors\n")
-	if ci.Repository == "" {
-		sb.WriteString(" For more details refer to https://github.com/xplshn/a-utils\n")
-	} else {
+	sb.WriteString(strings.Join(ci.Authors, ", ") + " and contributors\n")
+	if ci.Repository != "" {
 		sb.WriteString(fmt.Sprintf(" For more details refer to %s\n", ci.Repository))
 	}
 
@@ -115,10 +103,9 @@ func (ci *CmdInfo) GenerateHelpPage() (string, error) {
 	sb.WriteString("  Description:\n")
 	sb.WriteString(fmt.Sprintf("    %s\n", ci.Description))
 
-	// Behavior
-	if ci.Behavior != "" {
-		sb.WriteString("  Behavior:\n")
-		sb.WriteString(fmt.Sprintf("    %s\n", ci.Behavior))
+	// Custom Fields
+	for field, value := range ci.CustomFields {
+		sb.WriteString(fmt.Sprintf("  %s:\n    %s\n", field, value))
 	}
 
 	// Options
@@ -129,22 +116,7 @@ func (ci *CmdInfo) GenerateHelpPage() (string, error) {
 		}
 	}
 
-	// Notes
-	if ci.Notes != "" {
-		noteLines := strings.Split(ci.Notes, "\n")
-		if len(noteLines) > 1 {
-			sb.WriteString("  Notes:\n")
-		} else {
-			sb.WriteString("  Note:\n")
-		}
-		for _, line := range noteLines {
-			sb.WriteString(fmt.Sprintf("    %s\n", line))
-		}
-	}
-
-	// Ensure there is a newline at the end of the help page
 	sb.WriteString("\n")
-
 	return sb.String(), nil
 }
 
