@@ -14,12 +14,15 @@ import (
 func main() {
 	// Create an instance of CmdInfo
 	cmdInfo := &ccmd.CmdInfo{
-		Authors:      []string{"John Doe", "Jane Smith", "Joe Momma"},
-		Name:         "demo",
-		Synopsis:     "demo [options]",
-		Description:  "This is an example command line tool to demonstrate the ccmd (consistent command line) library.",
-		Behavior:     "This tool demonstrates basic usage of the ccmd library and formatting.",
-		Notes:        "we good",
+		Authors:     []string{"John Doe", "Jane Smith", "Joe Momma"},
+		Repository:  "https://github.com/xplshn/a-utils",
+		Name:        "demo",
+		Synopsis:    "demo [options]",
+		Description: "This is an example command line tool to demonstrate the ccmd (consistent command line) library.",
+		CustomFields: map[string]interface{}{
+			"Notes":    "We good\n",
+			"Behavior": "This tool demonstrates basic usage of the ccmd library and formatting.",
+		},
 		ExcludeFlags: make(map[string]bool),
 		Since:        1999,
 	}

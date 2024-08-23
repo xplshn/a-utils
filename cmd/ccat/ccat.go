@@ -22,10 +22,13 @@ func main() {
 	cmdInfo := &ccmd.CmdInfo{
 		Name:        "ccat",
 		Authors:     []string{"xplshn"},
+		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "Concatenates files and prints them to stdout with Syntax Highlighting",
 		Synopsis:    "<|--styles|--style [SYTHX_FILE]|> [FILE/s]",
-		Behavior:    "If no files are specified, read from stdin.",
-		Notes:       "The following env variables allow you to set the Style and Formatter to be used:\n  A_SYHX_COLOR_SCHEME: string: Acceptable values include any of the lines that `--styles` outputs\n  A_SYHX_FORMATTER: string: Acceptable values include: terminal8, terminal16 and terminal256\n",
+		CustomFields: map[string]interface{}{
+			"Notes":    "The following env variables allow you to set the Style and Formatter to be used:\n  A_SYHX_COLOR_SCHEME: string: Acceptable values include any of the lines that `--styles` outputs\n  A_SYHX_FORMATTER: string: Acceptable values include: terminal8, terminal16 and terminal256\ns",
+			"Behavior": "If no files are specified, read from stdin.",
+		},
 	}
 
 	helpPage, err := cmdInfo.GenerateHelpPage()

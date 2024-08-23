@@ -39,24 +39,26 @@ var (
 	fprompt   string
 	cmdInfo   = &ccmd.CmdInfo{
 		Authors:     []string{"xplshn"},
+		Repository:  "https://github.com/xplshn/a-utils",
 		Name:        "ed",
 		Synopsis:    "[-s] [-p <prompt>] [file]",
 		Description: "The standard Unix text editor",
-		Behavior:    "",
-		Notes: `Known Differences:
- - 'ed' uses go's 'regexp' package, and as such may have a somewhat different regular expression syntax. Note, however, that backreferences follow the 'ed' syntax of '\\<ref>', not the 'go' syntax of '$<ref>'.
- - 'ed' does not support "traditional" mode.
- - Rather than being an error, the 'g' option for 's' simply overrides any specified count.
-
-Implemented Features:
- - Full line address parsing (including RE and markings)
- - Implemented commands: !, #, =, E, H, P, Q, W, a, c, d, e, f, h, i, j, k, l, m, n, p, q, r, s, t, u, w, x, y, z
- - Syntax highlighting: _ <|pathToChromaStyle.xml|<styleName|>
-
-Not Yet Implemented or Incomplete:
- - Unimplemented commands: g, G, v, V
- - Does not (yet) support "loose" mode
- - Does not (yet) support "restricted" mode.`,
+		CustomFields: map[string]interface{}{
+			"Notes": `Known Differences:
+					 - 'ed' uses go's 'regexp' package, and as such may have a somewhat different regular expression syntax. Note, however, that backreferences follow the 'ed' syntax of '\\<ref>', not the 'go' syntax of '$<ref>'.
+					 - 'ed' does not support "traditional" mode.
+					 - Rather than being an error, the 'g' option for 's' simply overrides any specified count.
+					
+					Implemented Features:
+					 - Full line address parsing (including RE and markings)
+					 - Implemented commands: !, #, =, E, H, P, Q, W, a, c, d, e, f, h, i, j, k, l, m, n, p, q, r, s, t, u, w, x, y, z
+					 - Syntax highlighting: _ <|pathToChromaStyle.xml|<styleName|>
+					
+					Not Yet Implemented or Incomplete:
+					 - Unimplemented commands: g, G, v, V
+					 - Does not (yet) support "loose" mode
+					 - Does not (yet) support "restricted" mode.`,
+		},
 	}
 )
 

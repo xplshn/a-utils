@@ -79,11 +79,13 @@ func getRandomFortuneFile(fortunePath string) (string, error) {
 func main() {
 	cmdInfo := ccmd.CmdInfo{
 		Authors:     []string{"xplshn"},
+		Repository:  "https://github.com/xplshn/a-utils",
 		Name:        "fortune",
-		Synopsis:    "<--file|--path|--version>",
 		Usage:       "<--file|--path|--version>",
 		Description: "Provide a quote from a \"cookie file\"",
-		Behavior:    "If no directory or file is provided, fortune uses FORTUNE_FILE or FORTUNE_PATH environment variables. It will fail if neither arguments nor these variables are set.",
+		CustomFields: map[string]interface{}{
+			"Behavior": "If no directory or file is provided, fortune uses FORTUNE_FILE or FORTUNE_PATH environment variables. It will fail if neither arguments nor these variables are set.",
+		},
 	}
 
 	helpPage, err := cmdInfo.GenerateHelpPage()

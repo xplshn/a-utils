@@ -175,11 +175,14 @@ func main() {
 	all := flag.Bool("a", false, "Print all sysconf values")
 
 	cmdInfo := &ccmd.CmdInfo{
-		Name:        "getconf",
 		Authors:     []string{"yourname"},
+		Repository:  "https://github.com/xplshn/a-utils",
+		Name:        "getconf",
 		Description: "Get system configuration values",
 		Synopsis:    "<|-v|-a|> var [path]",
-		Behavior:    "Prints sysconf values or handles the specified path.",
+		CustomFields: map[string]interface{}{
+			"Behavior": "Prints sysconf values or handles the specified path.",
+		},
 	}
 
 	helpPage, err := cmdInfo.GenerateHelpPage()

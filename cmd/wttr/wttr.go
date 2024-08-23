@@ -82,8 +82,8 @@ func displayWeather(reader io.Reader) error {
 
 func main() {
 	location := flag.String("location", "", "Location for the weather report")
-	onlyCurrent := flag.Bool("0", true, "Only current weather")
-	superQuietVersion := flag.Bool("Q", true, "Superquiet version")
+	onlyCurrent := flag.Bool("0", false, "Only current weather")     // Default is false
+	superQuietVersion := flag.Bool("Q", false, "Superquiet version") // Default is false
 	forceANSI := flag.Bool("na", false, "Request non-ANSI output format. (HTML)")
 	currentAndToday := flag.Bool("1", false, "Current weather + today's forecast")
 	currentTodayTomorrow := flag.Bool("2", false, "Current weather + today's + tomorrow's forecast")
@@ -95,34 +95,42 @@ func main() {
 
 	cmdInfo := ccmd.CmdInfo{
 		Authors:     []string{"xplshn"},
+		Repository:  "https://github.com/xplshn/a-utils",
 		Name:        "wttr",
 		Synopsis:    "<--location> <[-0|-na|-nd|-T|-q|-n|-d|-2|-1|-Q]>",
 		Description: "Make a request to the online service wttr.in, which provides weather information",
-		Behavior:    "Use the specified flags to customize the output of the weather report.",
+		CustomFields: map[string]interface{}{
+			"Notes": "The default flags are: `-0`, `-Q` when no other flags are set, and `-F` if `-na` is not set.",
+		},
 	}
 
-	// Generate the help page
 	helpPage, err := cmdInfo.GenerateHelpPage()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error generating help page:", err)
 		os.Exit(1)
 	}
 
-	// Set the custom usage function
 	flag.Usage = func() {
 		fmt.Print(helpPage)
 	}
 
 	flag.Parse()
-	// Determine if any flags other than the location were provided, if so, no default flags are used
-	otherFlagsSet := flag.NFlag() > 1 || *disableDefaults
 
 	params := url.Values{}
-	params.Add("F", "")
-	if !*forceANSI {
+	// Apply defaults if no flags or only disableDefaults is set
+	if !*disableDefaults && flag.NFlag() <= 1 {
+		params.Add("0", "")
+		params.Add("Q", "")
+		params.Add("F", "")
+	}
+
+	// Add specific flags if set
+	if *forceANSI {
+		params.Add("na", "")
+	} else {
 		params.Add("A", "")
 	}
-	if *onlyCurrent && !otherFlagsSet {
+	if *onlyCurrent {
 		params.Add("0", "")
 	}
 	if *currentAndToday {
@@ -140,7 +148,7 @@ func main() {
 	if *quietVersion {
 		params.Add("q", "")
 	}
-	if *superQuietVersion && !otherFlagsSet {
+	if *superQuietVersion {
 		params.Add("Q", "")
 	}
 	if *noTermSeqs {

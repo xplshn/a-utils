@@ -20,10 +20,10 @@ type CmdInfo struct {
 	Synopsis     string // Either Synopsis or Usage must be set
 	Usage        string // ------------------------------------
 	Description  string
-	Options      []string          // Populated automatically
-	ExcludeFlags map[string]bool   // Tracks flags to exclude from help
-	Since        int               // Start year of the project
-	CustomFields map[string]string // Support for additional custom fields
+	Options      []string               // Populated automatically
+	ExcludeFlags map[string]bool        // Tracks flags to exclude from help
+	Since        int                    // Start year of the project
+	CustomFields map[string]interface{} // Support for additional custom fields
 }
 
 // DefineFlag registers a command-line flag and tracks exclusion status.
@@ -105,7 +105,13 @@ func (ci *CmdInfo) GenerateHelpPage() (string, error) {
 
 	// Custom Fields
 	for field, value := range ci.CustomFields {
-		sb.WriteString(fmt.Sprintf("  %s:\n    %s\n", field, value))
+		sb.WriteString(fmt.Sprintf("  %s:\n", field))
+
+		// Ensure that each line is indented the same as the first line
+		lines := strings.Split(fmt.Sprintf("%s", value), "\n")
+		for _, line := range lines {
+			sb.WriteString(fmt.Sprintf("    %s\n", line))
+		}
 	}
 
 	// Options

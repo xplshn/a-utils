@@ -96,6 +96,7 @@ func run(stdin io.Reader, stdout io.Writer, args []string, removeAnsiFlag bool, 
 func main() {
 	cmdInfo := &ccmd.CmdInfo{
 		Authors:     []string{"xplshn"},
+		Repository:  "https://github.com/xplshn/a-utils",
 		Name:        "catv",
 		Synopsis:    "<|-v|-t|-e|-r|-A|> [FILE/s]",
 		Description: "Provides a non-harmful way to make non-printable characters visible from the specified files",

@@ -14,11 +14,14 @@ func main() {
 	// Define your CmdInfo with the appropriate fields
 	cmdInfo := ccmd.CmdInfo{
 		Authors:     []string{"xplshn"},
+		Repository:  "https://github.com/xplshn/a-utils",
 		Name:        "hpwd",
 		Usage:       "<|-h>",
 		Description: "Stylized `pwd` command",
-		Behavior:    "If in the home directory, display '~' or the value of COOLHOME if set. If inside the home directory but not in the home itself, display the relative path prefixed with COOLHOME_DEPTH if set. Otherwise, display the full path.",
-		Options:     []string{"-h", "--help"},
+		CustomFields: map[string]interface{}{
+			"Behavior": "If in the home directory, display '~' or the value of COOLHOME if set. If inside the home directory but not in the home itself, display the relative path prefixed with COOLHOME_DEPTH if set. Otherwise, display the full path.",
+		},
+		Options: []string{"-h", "--help"},
 	}
 
 	// Check for help flags manually
