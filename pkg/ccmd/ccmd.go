@@ -26,35 +26,6 @@ type CmdInfo struct {
 	CustomFields map[string]interface{} // Support for additional custom fields
 }
 
-// DefineFlag registers a command-line flag and tracks exclusion status.
-func (ci *CmdInfo) DefineFlag(name string, value interface{}, usage string, exclude bool) {
-	switch v := value.(type) {
-	case bool:
-		flag.Bool(name, v, usage)
-	case *bool:
-		flag.BoolVar(v, name, *v, usage)
-	case int:
-		flag.Int(name, v, usage)
-	case *int:
-		flag.IntVar(v, name, *v, usage)
-	case string:
-		flag.String(name, v, usage)
-	case *string:
-		flag.StringVar(v, name, *v, usage)
-	case float64:
-		flag.Float64(name, v, usage)
-	case *float64:
-		flag.Float64Var(v, name, *v, usage)
-	case time.Duration:
-		flag.Duration(name, v, usage)
-	case *time.Duration:
-		flag.DurationVar(v, name, *v, usage)
-	default:
-		panic("unsupported flag type")
-	}
-	ci.ExcludeFlags[name] = exclude
-}
-
 // PopulateOptions fills the Options slice based on registered flags.
 func (ci *CmdInfo) PopulateOptions() {
 	ci.Options = nil
@@ -95,7 +66,7 @@ func (ci *CmdInfo) GenerateHelpPage() (string, error) {
 		sb.WriteString("\n  Synopsis\n")
 		sb.WriteString(fmt.Sprintf("    %s %s\n", ci.Name, ci.Synopsis))
 	} else if ci.Usage != "" {
-		sb.WriteString("\n  Synopsis\n")
+		sb.WriteString("\n  Usage\n")
 		sb.WriteString(fmt.Sprintf("    %s %s\n", ci.Name, ci.Usage))
 	}
 
@@ -103,22 +74,36 @@ func (ci *CmdInfo) GenerateHelpPage() (string, error) {
 	sb.WriteString("  Description:\n")
 	sb.WriteString(fmt.Sprintf("    %s\n", ci.Description))
 
-	// Custom Fields
-	for field, value := range ci.CustomFields {
-		sb.WriteString(fmt.Sprintf("  %s:\n", field))
-
-		// Ensure that each line is indented the same as the first line
-		lines := strings.Split(fmt.Sprintf("%s", value), "\n")
-		for _, line := range lines {
-			sb.WriteString(fmt.Sprintf("    %s\n", line))
-		}
-	}
-
 	// Options
 	if len(ci.Options) > 0 {
 		sb.WriteString("  Options:\n")
 		for _, opt := range ci.Options {
 			sb.WriteString(fmt.Sprintf("    %s\n", opt))
+		}
+	}
+
+	// Custom Fields
+	for i := 1; i <= len(ci.CustomFields); i++ {
+		key := fmt.Sprintf("%d_", i)
+		for field, value := range ci.CustomFields {
+			if strings.HasPrefix(field, key) {
+				sb.WriteString(fmt.Sprintf("  %s:\n", strings.TrimPrefix(field, key)))
+
+				// Ensure that each line is indented the same as the first line
+				lines := strings.Split(fmt.Sprintf("%s", value), "\n")
+				for _, line := range lines {
+					sb.WriteString(fmt.Sprintf("    %s\n", line))
+				}
+			}
+		}
+	}
+
+	// Notes (always the last field)
+	if notes, ok := ci.CustomFields["Notes"]; ok {
+		sb.WriteString("  Notes:\n")
+		lines := strings.Split(fmt.Sprintf("%s", notes), "\n")
+		for _, line := range lines {
+			sb.WriteString(fmt.Sprintf("    %s\n", line))
 		}
 	}
 
@@ -190,28 +175,6 @@ func CFormatRight(text string, width int) string {
 		if lineLength < width {
 			// Right-align the line with padding on the left
 			sb.WriteString(fmt.Sprintf("%*s", width, line))
-		} else {
-			sb.WriteString(line)
-		}
-	}
-
-	return sb.String()
-}
-
-// FormatLeft formats the text to be left-aligned based on the terminal width.
-func FormatLeft(text string) string {
-	return CFormatLeft(text, GetTerminalWidth())
-}
-
-// CFormatLeft formats the text to be left-aligned based on the width passed by the user.
-func CFormatLeft(text string, width int) string {
-	lines := strings.Split(text, "\n")
-	var sb strings.Builder
-
-	for _, line := range lines {
-		lineLength := len(line)
-		if lineLength < width {
-			sb.WriteString(fmt.Sprintf("%-*s", width, line))
 		} else {
 			sb.WriteString(line)
 		}

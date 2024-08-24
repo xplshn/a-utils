@@ -84,7 +84,7 @@ func main() {
 		Usage:       "<--file|--path|--version>",
 		Description: "Provide a quote from a \"cookie file\"",
 		CustomFields: map[string]interface{}{
-			"Behavior": "If no directory or file is provided, fortune uses FORTUNE_FILE or FORTUNE_PATH environment variables. It will fail if neither arguments nor these variables are set.",
+			"1_Behavior": "If no directory or file is provided, fortune uses FORTUNE_FILE or FORTUNE_PATH environment variables. It will fail if neither arguments nor these variables are set.",
 		},
 	}
 

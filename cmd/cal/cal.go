@@ -36,7 +36,7 @@ func main() {
 		Synopsis:    "<|-h|-j|-m|-w|-y|> <month> <year>",
 		Description: "Displays a calendar",
 		CustomFields: map[string]interface{}{
-			"Notes": "This version of cal contains does not account for the Gregorian Reformation that happened in 1752 after the 2nd of September.\nThis implementation is pure technical debt and is NOT conformant to https://man.openbsd.org/cal.1\nThat's going to change soon I hope.",
+			"Notes": "This version of cal does not account for the Gregorian Reformation that happened in 1752 after the 2nd of September.\nThis implementation is pure technical debt and is NOT conformant to https://man.openbsd.org/cal.1\nThat's going to change soon I hope.",
 		},
 	}
 

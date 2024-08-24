@@ -26,8 +26,8 @@ func main() {
 		Description: "Concatenates files and prints them to stdout with Syntax Highlighting",
 		Synopsis:    "<|--styles|--style [SYTHX_FILE]|> [FILE/s]",
 		CustomFields: map[string]interface{}{
-			"Notes":    "The following env variables allow you to set the Style and Formatter to be used:\n  A_SYHX_COLOR_SCHEME: string: Acceptable values include any of the lines that `--styles` outputs\n  A_SYHX_FORMATTER: string: Acceptable values include: terminal8, terminal16 and terminal256\ns",
-			"Behavior": "If no files are specified, read from stdin.",
+			"1_Behavior": "If no files are specified, read from stdin.",
+			"2_Notes":    "The following env variables allow you to set the Style and Formatter to be used:\n  A_SYHX_COLOR_SCHEME: string: Acceptable values include any of the lines that `--styles` outputs\n  A_SYHX_FORMATTER: string: Acceptable values include: terminal8, terminal16 and terminal256\ns",
 		},
 	}
 

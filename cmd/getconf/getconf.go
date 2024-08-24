@@ -181,7 +181,7 @@ func main() {
 		Description: "Get system configuration values",
 		Synopsis:    "<|-v|-a|> var [path]",
 		CustomFields: map[string]interface{}{
-			"Behavior": "Prints sysconf values or handles the specified path.",
+			"1_Behavior": "Prints sysconf values or handles the specified path.",
 		},
 	}
 

@@ -19,7 +19,7 @@ func main() {
 		Usage:       "<|-h>",
 		Description: "Stylized `pwd` command",
 		CustomFields: map[string]interface{}{
-			"Behavior": "If in the home directory, display '~' or the value of COOLHOME if set. If inside the home directory but not in the home itself, display the relative path prefixed with COOLHOME_DEPTH if set. Otherwise, display the full path.",
+			"1_Behavior": "If in the home directory, display '~' or the value of COOLHOME if set. If inside the home directory but not in the home itself, display the relative path prefixed with COOLHOME_DEPTH if set. Otherwise, display the full path.",
 		},
 		Options: []string{"-h", "--help"},
 	}

@@ -5,7 +5,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/xplshn/a-utils/pkg/ccmd"
@@ -20,31 +19,27 @@ func main() {
 		Synopsis:    "demo [options]",
 		Description: "This is an example command line tool to demonstrate the ccmd (consistent command line) library.",
 		CustomFields: map[string]interface{}{
-			"Notes":    "We good\n",
-			"Behavior": "This tool demonstrates basic usage of the ccmd library and formatting.",
+			"1_Behavior": "This tool demonstrates basic usage of the ccmd library and formatting.",
+			"2_Notes":    "We good",
 		},
-		ExcludeFlags: make(map[string]bool),
-		Since:        1999,
+		Since: 1999,
 	}
 
-	// Define some flags
-	cmdInfo.DefineFlag("verbose", false, "Enable verbose output", false)
-	cmdInfo.DefineFlag("count", 1, "Number of times to repeat", false)
-	cmdInfo.DefineFlag("name", "user", "Name to greet", false)
-	cmdInfo.DefineFlag("duration", time.Second, "Duration to wait", false)
-
-	// Generate the help page
-	helpText, err := cmdInfo.GenerateHelpPage()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error generating help page: %v\n", err)
-		os.Exit(1)
-	}
+	// Define some flags using the flag package
+	flag.Bool("verbose", false, "Enable verbose output")
+	flag.Int("count", 1, "Number of times to repeat")
+	flag.String("name", "user", "Name to greet")
+	flag.Duration("duration", time.Second, "Duration to wait")
 
 	flag.Usage = func() {
-		fmt.Print(helpText)
+		helpPage, err := cmdInfo.GenerateHelpPage()
+		if err != nil {
+			fmt.Printf("Error generating help page: %v\n", err)
+			return
+		}
+		fmt.Print(helpPage)
 	}
-
-	// Parse command line flags
+	// Parse the flags
 	flag.Parse()
 
 	// Print the centered help page
@@ -53,12 +48,6 @@ func main() {
 	paragraph := `I am a very long paragraph, with more than one line and son
 I expect you not read this, its just to test the header title alignment`
 	fmt.Println(ccmd.CFormatCenter(header, ccmd.RelativeTo(paragraph)))
-	fmt.Println(paragraph)
-	fmt.Println()
-	header = "long text, left-aligned (will rob you and tax you)"
-	paragraph = `I am a very long paragraph, with more than one line and son
-I expect you not read this, its just to test the header title alignment`
-	fmt.Println(ccmd.CFormatLeft(header, ccmd.RelativeTo(paragraph)))
 	fmt.Println(paragraph)
 	fmt.Println()
 	header = "long text, right-aligned (will rob you and tax you, its not a replacement for a libertarian, but says it is)"
