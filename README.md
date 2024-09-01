@@ -47,7 +47,7 @@ I am very much against bloat, but I enjoy challenges, which translates into me i
 9. `hpwd`, an implementation of `pwd` that replaces your $HOME with a prefix such as `~` or something else. For use with PS1 on strict POSIX shells
 10. `wttr`, get's weather info from `wttr.in`
 11. `cal`, an implementation of the POSIX `cal` command, as described in the OpenBSD manpage, that strives to have the same alignment as Busybox's and has (or tries to have) the Toybox's `cal` option to highlight specified days
-12. `sed` implementation in Go, didn't add extensions.
+12. `sed` implementation in Go, didn't add extensions. (doesn't comply, fails standard tests)
 13. `demo`, just a demo of the `ccmd` pkg/library
 
 #### Contributions
