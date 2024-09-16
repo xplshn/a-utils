@@ -96,7 +96,7 @@ func run(stdin io.Reader, stdout io.Writer, customStyleName string, args ...stri
 
 	for _, file := range args {
 		var reader io.Reader
-		if file == "-" {
+		if file == "-" { // Such a naughty hack, but people use it anyways...
 			reader = stdin
 		} else {
 			f, err := os.Open(file)

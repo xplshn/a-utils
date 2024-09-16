@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/liamg/tml v0.7.0
 	github.com/tklauser/go-sysconf v0.3.14
-	golang.org/x/sys v0.24.0
+	golang.org/x/sys v0.25.0
 )
 
 require (
