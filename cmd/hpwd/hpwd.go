@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	// Define your CmdInfo with the appropriate fields
 	cmdInfo := ccmd.CmdInfo{
 		Authors:     []string{"xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",

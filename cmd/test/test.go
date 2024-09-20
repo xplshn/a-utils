@@ -79,32 +79,32 @@ func printHelp() {
 		Description: "Return true or false by performing tests. No arguments is false, one argument is true if not empty string.",
 		CustomFields: map[string]interface{}{
 			"Notes": `--- Tests with a single argument (after the option):
-							PATH is/has:
-							  -b  block device   -f  regular file   -p  fifo           -u  setuid bit
-							  -c  char device    -g  setgid         -r  readable       -w  writable
-							  -d  directory      -h  symlink        -S  socket         -x  executable
-							  -e  exists         -L  symlink        -s  nonzero size   -k  sticky bit
-							STRING is:
-							  -n  nonzero size   -z  zero size
-							FD (integer file descriptor) is:
-							  -t  a TTY
-							
-							--- non-POSIX tests: '-k', '[[' '<' '>' '=~' ']]'
-							
-							--- Tests with one argument on each side of an operator:
-							Two strings:
-							  =  are identical   !=  differ         =~  string matches regex
-							Alphabetical sort:
-							  <  first is lower  >   first higher
-							Two integers:
-							  -eq  equal         -gt  first > second    -lt  first < second
-							  -ne  not equal     -ge  first >= second   -le  first <= second
-							Two files:
-							  -ot  Older mtime   -nt  Newer mtime       -ef  same dev/inode
-							
-							--- Modify or combine tests:
-							  ! EXPR     not (swap true/false)   EXPR -a EXPR    and (are both true)
-							  ( EXPR )   evaluate this first     EXPR -o EXPR    or (is either true)`,
+				PATH is/has:
+				  -b  block device   -f  regular file   -p  fifo           -u  setuid bit
+				  -c  char device    -g  setgid         -r  readable       -w  writable
+				  -d  directory      -h  symlink        -S  socket         -x  executable
+				  -e  exists         -L  symlink        -s  nonzero size   -k  sticky bit
+				STRING is:
+				  -n  nonzero size   -z  zero size
+				FD (integer file descriptor) is:
+				  -t  a TTY
+
+				--- non-POSIX tests: '-k', '[[' '<' '>' '=~' ']]'
+
+				--- Tests with one argument on each side of an operator:
+				Two strings:
+				  =  are identical   !=  differ         =~  string matches regex
+				Alphabetical sort:
+				  <  first is lower  >   first higher
+				Two integers:
+				  -eq  equal         -gt  first > second    -lt  first < second
+				  -ne  not equal     -ge  first >= second   -le  first <= second
+				Two files:
+				  -ot  Older mtime   -nt  Newer mtime       -ef  same dev/inode
+
+				--- Modify or combine tests:
+				  ! EXPR     not (swap true/false)   EXPR -a EXPR    and (are both true)
+				  ( EXPR )   evaluate this first     EXPR -o EXPR    or (is either true)`,
 		},
 	}
 	helpPage, err := cmdInfo.GenerateHelpPage()
