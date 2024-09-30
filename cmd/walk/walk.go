@@ -116,7 +116,7 @@ func main() {
 		Authors:     []string{"as", "xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "traverse a list of targets (directories or files)",
-		Synopsis:    "<|-b|-a|-t [INT]|> <|-d|-f|-x|> [target ...]",
+		Synopsis:    "<|-a|-t [INT]|> <|-d|-f|-x|> [target ...]",
 		CustomFields: map[string]interface{}{
 			"1_Behavior": `Walk walks the named file list and prints each name
 to standard output. A directory in the file list is

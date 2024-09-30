@@ -48,7 +48,10 @@ I am very much against bloat, but I enjoy challenges, which translates into me i
 10. `wttr`, get's weather info from `wttr.in`
 11. `cal`, an implementation of the POSIX `cal` command, as described in the OpenBSD manpage, that strives to have the same alignment as Busybox's and has (or tries to have) the Toybox's `cal` option to highlight specified days
 12. `sed` implementation in Go, didn't add extensions. (doesn't comply, fails standard tests)
-13. `demo`, just a demo of the `ccmd` pkg/library
+13. `fin`, file info command, from Torgo, created by "as" and now maintained by @xplshn (me)
+14. `walk`, walk command, from Torgo, created by "as" and now maintained by @xplshn (me), this command walks a directory based on various rules and it print each file's full path to STDOUT
+15. `relf`, a program that shows you the sections of an ELF file and can also guess what the unknown "sections" contain
+15. `demo`, just a demo of the `ccmd` pkg/library
 
 #### Contributions
 I am looking for contributors, in fact. I NEED THEM. This is an ambicious project. And if you wish to contribute, please do! By openning a PR here to add a POSIX compliant utility that you've implemented, or bringing up to my attention bugs in our programs.

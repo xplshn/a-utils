@@ -1,5 +1,4 @@
-// Copyright 2016 "as".
-
+// Copyright 2016 "as", "xplshn" 2024
 package main
 
 import (
@@ -28,8 +27,8 @@ func main() {
 		Name:        "fi",
 		Authors:     []string{"as", "xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
-		Description: "Prints file information for files read from stdin",
-		Synopsis:    "fi [-s -c -m -d -p -v]",
+		Description: "Prints file information for files read from stdin or arguments",
+		Synopsis:    "fi [-s -c -m -d -p -v] [file1 [file2 ...]]",
 		CustomFields: map[string]interface{}{
 			"1_Examples": `Print file sizes and cumulative total:
   \$ walk -f mink/ | fi -s -c`,
@@ -48,7 +47,6 @@ func main() {
 	// Parse flags
 	flag.Parse()
 
-	scanner := bufio.NewScanner(os.Stdin)
 	var printFuncs []func(string, os.FileInfo) string
 
 	// Build the list of printing functions based on the flags
@@ -67,7 +65,7 @@ func main() {
 	}
 	if *printModTime {
 		printFuncs = append(printFuncs, func(s string, fi os.FileInfo) string {
-			return fmt.Sprintf("%s\t", fi.ModTime().Format("2006.01.02 15:04:05"))
+			return fmt.Sprintf("%s\t", fi.ModTime().Format(time.RFC3339))
 		})
 	}
 	if *printPermissions {
@@ -78,9 +76,23 @@ func main() {
 
 	totalSize := int64(0)
 
-	// Process each file from stdin
-	for scanner.Scan() {
-		fileName := scanner.Text()
+	// Check if any arguments are provided
+	if len(flag.Args()) == 0 {
+		// Check if stdin is being used
+		stat, err := os.Stdin.Stat()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error checking stdin:", err)
+			os.Exit(1)
+		}
+		if (stat.Mode() & os.ModeCharDevice) != 0 {
+			// No arguments and stdin is not being used, exit
+			fmt.Fprintln(os.Stderr, "No input files and stdin is not being used. Exiting.")
+			os.Exit(1)
+		}
+	}
+
+	// Process each file from arguments
+	for _, fileName := range flag.Args() {
 		fileInfo, err := os.Stat(fileName)
 		if err != nil {
 			if *verbose {
@@ -95,6 +107,39 @@ func main() {
 		}
 		fmt.Print(output)
 		totalSize += fileInfo.Size()
+	}
+
+	// Check if stdin is being used
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error checking stdin:", err)
+		os.Exit(1)
+	}
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		// Process each file from stdin
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			fileName := scanner.Text()
+			fileInfo, err := os.Stat(fileName)
+			if err != nil {
+				if *verbose {
+					printError(err)
+				}
+				continue
+			}
+
+			output := ""
+			for i := len(printFuncs) - 1; i >= 0; i-- {
+				output += printFuncs[i](fileName, fileInfo)
+			}
+			fmt.Print(output)
+			totalSize += fileInfo.Size()
+		}
+		if err := scanner.Err(); err != nil {
+			if *verbose {
+				printError(err)
+			}
+		}
 	}
 
 	// Print cumulative total if the flag is set
