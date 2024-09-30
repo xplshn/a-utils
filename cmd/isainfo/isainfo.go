@@ -66,7 +66,7 @@ func printFlags() {
 
 // printHelp prints the help message.
 func printHelp(option string) {
-	fmt.Printf("isainfo: illegal option -%s\nusage: isainfo [-b | -k | -n | -x ]\n", option)
+	fmt.Printf("isainfo: illegal option -%s\nusage: isainfo [-b|-k|-n]\n", option)
 }
 
 // main function to process command-line arguments and execute corresponding actions.
@@ -75,7 +75,7 @@ func main() {
 		Authors:     []string{"xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Name:        "isainfo",
-		Synopsis:    "<|-b|-k|-n|-x>",
+		Synopsis:    "<|-b|-k|-n|>",
 		Description: "Prints CPU architecture and flags.",
 	}
 

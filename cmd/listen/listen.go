@@ -27,7 +27,7 @@ func main() {
 		Description: "Listen on a network port and optionally run a command for each new connection.",
 		Synopsis:    "listen [options] port [cmd ...]",
 		CustomFields: map[string]interface{}{
-			"Examples": `Serve index.html over HTTP:
+			"1_Examples": `Serve index.html over HTTP:
   \$ listen :80 cat index.html
 
 Forward connections to google.com:
