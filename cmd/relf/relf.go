@@ -193,7 +193,7 @@ func main() {
 
 	cmdInfo := &ccmd.CmdInfo{
 		Name:        "relf",
-		Authors:     []string{"as", "xplshn"},
+		Authors:     []string{"xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "Prints section sizes of ELF files",
 		Synopsis:    "relf [-tree -s] <elf-file>",
