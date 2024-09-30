@@ -50,11 +50,13 @@ I am very much against bloat, but I enjoy challenges, which translates into me i
 12. `sed` implementation in Go, didn't add extensions. (doesn't comply, fails standard tests)
 13. `fin`, file info command, from Torgo, created by "as" and now maintained by @xplshn (me)
 14. `walk`, walk command, from Torgo, created by "as" and now maintained by @xplshn (me), this command walks a directory based on various rules and it print each file's full path to STDOUT
-15. `relf`, a program that shows you the sections of an ELF file and can also guess what the unknown "sections" contain
-15. `demo`, just a demo of the `ccmd` pkg/library
+15. `listen`, listens and announces on a network port, ported from Torgo
+16. `dial`, dials a network endpoint, ported from Torgo
+17. `relf`, a program that shows you the sections of an ELF file and can also guess what the unknown "sections" contain
+18. `demo`, just a demo of the `ccmd` pkg/library
 
 #### Contributions
 I am looking for contributors, in fact. I NEED THEM. This is an ambicious project. And if you wish to contribute, please do! By openning a PR here to add a POSIX compliant utility that you've implemented, or bringing up to my attention bugs in our programs.
 
 ### Note on Building
-A-Utils utilizes build.sh for building utilities. This script checks for cbuild.sh in cloned repositories listed in extendC.b and executes them accordingly. For Go binaries, extendGo.b serves a similar purpose but doesn't require cbuild.sh. By default, ./build.sh builds utilities in the local ./cmd folder but can be adapted for other projects.
+A-Utils utilizes build.sh for building utilities. This script checks for cbuild.sh in cloned repositories listed in extendC.b and executes them accordingly. For Go binaries, extendGo.b serves a similar purpose but doesn't require cbuild.sh. By default, ./build.sh builds utilities in the local ./cmd folder but can be adapted for other projects. To build a single-file binary, you'll need: https://github.com/xplshn/a-utils_gobusybox
