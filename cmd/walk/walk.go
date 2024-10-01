@@ -5,10 +5,9 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"strings"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/xplshn/a-utils/pkg/ccmd"
@@ -18,115 +17,101 @@ const Prefix = "walk: "
 
 // Constants and global variables
 var (
-	NGo   = 1024 * 16
-	gosem = make(chan struct{}, NGo)
+	MaxConcurrency     = 1024 * 16
+	goroutineSemaphore = make(chan struct{}, MaxConcurrency)
 )
 
 var run struct {
-	traverse func(string, func(string))
+	traverse   func(string, func(string), int64)
 	conditions []func(string) bool
-	print func(string)
+	print      func(string)
 }
 
 type Directory struct {
 	Name  string
-	Files []os.FileInfo
+	Files []os.DirEntry
 	Level int64
 }
 
 var (
-	visitedMap = make(map[string]bool)
+	visitedMap  = make(map[string]bool)
 	rwlock      sync.RWMutex
 	visitedFunc = markVisited
 )
 
 // isDirectory checks if the given path is a directory
-func isDirectory(f string) bool {
-	fi, err := os.Stat(f)
+func isDirectory(path string) bool {
+	info, err := os.Stat(path)
 	if err != nil {
 		printError(err)
 		return false
 	}
-	return fi.IsDir()
+	return info.IsDir()
 }
 
 // isNotDirectory checks if the given path is not a directory
-func isNotDirectory(f string) bool {
-	return !isDirectory(f)
+func isNotDirectory(path string) bool {
+	return !isDirectory(path)
 }
 
-// isNotHidden checks if the given path is not a hidden file
-func isNotHidden(e string) bool {
-	return !strings.HasPrefix(e, ".")
+// isNotHidden checks if the given path is not a hidden file or directory
+func isNotHidden(path string) bool {
+	return !strings.HasPrefix(filepath.Base(path), ".")
 }
 
 // markVisited marks a file as visited
-func markVisited(f string) (yes bool) {
-    rwlock.RLock()
-    _, yes = visitedMap[f]
-    rwlock.RUnlock()
+func markVisited(path string) (alreadyVisited bool) {
+	rwlock.RLock()
+	_, alreadyVisited = visitedMap[path]
+	rwlock.RUnlock()
 
-    if !yes {
-        rwlock.Lock()
-        visitedMap[f] = true
-        rwlock.Unlock()
-    }
-    return
+	if !alreadyVisited {
+		rwlock.Lock()
+		visitedMap[path] = true
+		rwlock.Unlock()
+	}
+	return
 }
 
 // printFile prints the file path if it meets all conditions
-func printFile(f string) {
+func printFile(path string) {
 	for _, condition := range run.conditions {
-		if !condition(f) {
+		if !condition(path) {
 			return
 		}
 	}
-	fmt.Println(f)
+	fmt.Println(path)
 }
 
 // printAbsoluteFile prints the absolute path of the file if it meets all conditions
-func printAbsoluteFile(f string) bool {
+func printAbsoluteFile(path string) bool {
 	var err error
-	if !filepath.IsAbs(f) {
-		if f, err = filepath.Abs(f); err != nil {
+	if !filepath.IsAbs(path) {
+		if path, err = filepath.Abs(path); err != nil {
 			printError(err)
 			return false
 		}
 	}
-	printFile(f)
+	printFile(path)
 	return true
 }
 
-var args struct {
-	h, q             bool
-	a, d, f, x       bool
-	t                int64
-}
-
 func main() {
-	flag.BoolVar(&args.a, "a", false, "Print absolute paths")
-	flag.BoolVar(&args.d, "d", false, "Print directories only")
-	flag.BoolVar(&args.f, "f", false, "Print files only")
-	flag.BoolVar(&args.x, "x", false, "Hide hidden files")
-	flag.Int64Var(&args.t, "t", 1024*1024*1024, "Traversal limit")
+	// Options
+	printAbsolute := flag.Bool("a", false, "Print absolute paths")
+	noRelativePrefix := flag.Bool("nr", false, "Don't print ./ in relative paths")
+	traversalLimit := flag.Int64("t", 1024*1024*1024, "Traversal depth limit")
+	// Conditions
+	printDirectories := flag.Bool("d", false, "Print directories only")
+	printFiles := flag.Bool("f", false, "Print files only")
+	hideHidden := flag.Bool("x", false, "Hide hidden files")
 
 	cmdInfo := &ccmd.CmdInfo{
 		Name:        "walk",
 		Authors:     []string{"as", "xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "traverse a list of targets (directories or files)",
-		Synopsis:    "<|-a|-t [INT]|> <|-d|-f|-x|> [target ...]",
-		CustomFields: map[string]interface{}{
-			"1_Behavior": `Walk walks the named file list and prints each name
-to standard output. A directory in the file list is
-a file list. The file "-" names standard input as a
-file list of line-separated file names.`,
-			"2_Example": `Walk the first four levels down the directory
-tree, look for "mobius", and walk all files in
-the mobius directories.
-	\$ walk -d -t 4 | grep -i mobius | walk -f -`,
-			"3_Notes":    "Walk will not follow symlinks",
-		},
+		Synopsis:    "<|-a|-nr|-t [INT]|> <|-d|-f|-x|> [target ...]", // FIX -x
 	}
 	helpPage, err := cmdInfo.GenerateHelpPage()
 	if err != nil {
@@ -138,114 +123,106 @@ the mobius directories.
 	}
 	flag.Parse()
 
-	if args.d && args.f {
-		printError("bad args: -d and -f")
+	if *printDirectories && *printFiles {
+		printError("bad args: -dirs-only and -files-only cannot both be true")
 		os.Exit(1)
 	}
 
 	run.traverse = depthFirstTraversal
-	if args.d {
+	if *printDirectories {
 		run.conditions = append(run.conditions, isDirectory)
 	}
-	if args.f {
+	if *printFiles {
 		run.conditions = append(run.conditions, isNotDirectory)
 	}
-	if args.x {
+	if *hideHidden {
 		run.conditions = append(run.conditions, isNotHidden)
 	}
 
 	paths := flag.Args()
 	if len(paths) == 0 {
-		paths = []string{"."} // Current working dir
-		run.print = func(f string) {
-			for _, condition := range run.conditions {
-				if !condition(f) {
-					return
-				}
-			}
-			if len(f) > 2 {
-				fmt.Println(f[2:])
-			}
-		}
+		paths = []string{"."}
 	}
-	if args.a {
-		run.print = func(f string) {
-			var err error
-			for _, condition := range run.conditions {
-				if !condition(f) {
-					return
-				}
-			}
-			if f, err = filepath.Abs(f); err != nil {
-				printError(err)
-				return
-			}
-			fmt.Println(f)
+
+	if *printAbsolute {
+		run.print = func(path string) {
+			printAbsoluteFile(path)
 		}
 	} else {
-		run.print = printFile
+		run.print = func(path string) {
+			for _, condition := range run.conditions {
+				if !condition(path) {
+					return
+				}
+			}
+			if !*noRelativePrefix && !strings.HasPrefix(path, "./") && !strings.HasPrefix(path, "../") {
+				path = "./" + path
+			}
+			fmt.Println(path)
+		}
 	}
 
 	var wg sync.WaitGroup
-	for _, v := range paths {
+	for _, target := range paths {
 		wg.Add(1)
-		go func(v string) {
+		go func(target string) {
 			defer wg.Done()
-			if v != "-" {
-				run.traverse(v, run.print)
+			if target != "-" {
+				run.traverse(target, run.print, *traversalLimit)
 			} else {
 				in := bufio.NewScanner(os.Stdin)
 				for in.Scan() {
-					run.traverse(in.Text(), run.print)
+					run.traverse(in.Text(), run.print, *traversalLimit)
 				}
 			}
-		}(v)
+		}(target)
 	}
 	wg.Wait()
 }
 
-// depthFirstTraversal performs a depth-first traversal of the file f
-func depthFirstTraversal(name string, fn func(string)) {
-	listch := make(chan string, NGo)
+// depthFirstTraversal performs a depth-first traversal of the directory tree
+func depthFirstTraversal(root string, fn func(string), maxDepth int64) {
+	listChannel := make(chan string, MaxConcurrency)
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go depthFirstTraversalHelper(name, &wg, 0, listch)
+	go depthFirstTraversalHelper(root, &wg, 0, listChannel, maxDepth)
 	go func() {
 		wg.Wait()
-		close(listch)
+		close(listChannel)
 	}()
-	for d := range listch {
-		run.print(d)
+	for path := range listChannel {
+		run.print(path)
 	}
 }
 
-func depthFirstTraversalHelper(nm string, wg *sync.WaitGroup, deep int64, listch chan<- string) {
+// depthFirstTraversalHelper assists in depth-first traversal, enforcing depth limit
+func depthFirstTraversalHelper(path string, wg *sync.WaitGroup, depth int64, listch chan<- string, maxDepth int64) {
 	defer wg.Done()
-	d := getDirectory(nm, deep)
-	if d == nil {
+	dir := getDirectory(path, depth)
+	if dir == nil || depth > maxDepth {
 		return
 	}
-	for _, f := range d.Files {
-		kid := filepath.Join(d.Name, f.Name())
-		if visitedFunc(kid) {
+	for _, file := range dir.Files {
+		childPath := filepath.Join(dir.Name, file.Name())
+		if visitedFunc(childPath) {
 			continue
 		}
-		if f.IsDir() && deep < args.t {
+		if file.IsDir() && depth < maxDepth {
 			wg.Add(1)
-			go depthFirstTraversalHelper(kid, wg, deep+1, listch)
+			go depthFirstTraversalHelper(childPath, wg, depth+1, listch, maxDepth)
 		}
-		listch <- kid
+		listch <- childPath
 	}
 }
 
 // getDirectory reads the directory and returns its contents
-func getDirectory(n string, level int64) (dir *Directory) {
-	f, err := ioutil.ReadDir(n)
-	if err != nil || f == nil {
+func getDirectory(path string, level int64) *Directory {
+	files, err := os.ReadDir(path)
+	if err != nil || files == nil {
 		printError(err)
 		return nil
 	}
-	return &Directory{n, f, level}
+	return &Directory{Name: path, Files: files, Level: level}
 }
 
 // println prints a message with the prefix
