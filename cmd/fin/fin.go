@@ -17,6 +17,7 @@ const (
 
 func main() {
 	printSize := flag.Bool("s", false, "Print file size")
+	humanReadable := flag.Bool("h", false, "Print sizes in human-readable format")
 	printCumulative := flag.Bool("c", false, "Print cumulative statistics")
 	printModTime := flag.Bool("m", false, "Print modified time")
 	printDuration := flag.Bool("d", false, "Print duration since last modified")
@@ -28,7 +29,7 @@ func main() {
 		Authors:     []string{"as", "xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "Prints file information for files read from stdin or arguments",
-		Synopsis:    "fi [-s -c -m -d -p -v] [file1 [file2 ...]]",
+		Synopsis:    "fi [-s -c -m -d -p -v -h] [file1 [file2 ...]]",
 		CustomFields: map[string]interface{}{
 			"1_Examples": `Print file sizes and cumulative total:
   \$ walk -f mink/ | fi -s -c`,
@@ -55,6 +56,9 @@ func main() {
 	})
 	if *printSize {
 		printFuncs = append(printFuncs, func(s string, fi os.FileInfo) string {
+			if *humanReadable {
+				return fmt.Sprintf("%s\t", humanReadableSize(uint64(fi.Size())))
+			}
 			return fmt.Sprintf("%d\t", fi.Size())
 		})
 	}
@@ -85,7 +89,8 @@ func main() {
 			os.Exit(1)
 		}
 		if (stat.Mode() & os.ModeCharDevice) != 0 {
-			// No arguments and stdin is not being used, exit
+			// No arguments and stdin is not being used, show help page & exit
+			fmt.Print(helpPage)
 			fmt.Fprintln(os.Stderr, "No input files and stdin is not being used. Exiting.")
 			os.Exit(1)
 		}
@@ -144,11 +149,35 @@ func main() {
 
 	// Print cumulative total if the flag is set
 	if *printSize && *printCumulative {
-		fmt.Printf("%d total\n", totalSize)
+		if *humanReadable {
+			fmt.Printf("%s total\n", humanReadableSize(uint64(totalSize)))
+		} else {
+			fmt.Printf("%d total\n", totalSize)
+		}
 	}
 }
 
 func printError(v ...interface{}) {
 	fmt.Fprint(os.Stderr, Prefix)
 	fmt.Fprintln(os.Stderr, v...)
+}
+
+// humanReadableSize converts a size in bytes to a human-readable format.
+func humanReadableSize(size uint64) string {
+	const (
+		KB = 1024
+		MB = KB * 1024
+		GB = MB * 1024
+	)
+
+	switch {
+	case size >= GB:
+		return fmt.Sprintf("%.2f GB", float64(size)/GB)
+	case size >= MB:
+		return fmt.Sprintf("%.2f MB", float64(size)/MB)
+	case size >= KB:
+		return fmt.Sprintf("%.2f KB", float64(size)/KB)
+	default:
+		return fmt.Sprintf("%d B", size)
+	}
 }
