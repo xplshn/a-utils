@@ -56,9 +56,8 @@ func isNotDirectory(f string) bool {
 }
 
 // isNotHidden checks if the given path is not a hidden file
-func isNotHidden(f string) bool {
-	base := filepath.Base(f)
-	return !strings.HasPrefix(base, ".")
+func isNotHidden(e string) bool {
+	return !strings.HasPrefix(e, ".")
 }
 
 // markVisited marks a file as visited
