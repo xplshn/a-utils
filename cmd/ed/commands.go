@@ -37,40 +37,7 @@ type Command func(*Context) error
 
 // The cmds map maps single byte commands to their handler functions.
 // This is also a good way to check what commands are implemented.
-var cmds = map[byte]Command{
-	'q': cmdQuit,
-	'Q': cmdQuit,
-	'd': cmdDelete,
-	'l': cmdPrint,
-	'p': cmdPrint,
-	'n': cmdPrint,
-	'h': cmdErr,
-	'H': cmdErr,
-	'a': cmdInput,
-	'i': cmdInput,
-	'c': cmdInput,
-	'w': cmdWrite,
-	'W': cmdWrite,
-	'k': cmdMark,
-	'e': cmdEdit,
-	'E': cmdEdit,
-	'r': cmdEdit,
-	'f': cmdFile,
-	'=': cmdLine,
-	'j': cmdJoin,
-	'm': cmdMove,
-	't': cmdMove,
-	'y': cmdCopy,
-	'x': cmdPaste,
-	'P': cmdPrompt,
-	's': cmdSub,
-	'u': cmdUndo,
-	'D': cmdDump, // var dump the buffer for debug
-	'z': cmdScroll,
-	'!': cmdCommand,
-	'_': cmdSyntaxHighlighting,
-	'#': func(*Context) (e error) { return },
-}
+var cmds map[byte]Command
 
 //////////////////////
 // Command handlers /
@@ -815,4 +782,154 @@ func cmdCommand(ctx *Context) (e error) {
 	}
 	fmt.Fprintf(ctx.out, "!")
 	return
+}
+
+// Implementation of the 'g' and 'G' commands
+func cmdGlobal(ctx *Context) (e error) {
+	cmd := ctx.cmd[ctx.cmdOffset+1:]
+	if len(cmd) == 0 {
+		return fmt.Errorf("invalid global command")
+	}
+
+	// Split the command into pattern and command parts
+	parts := strings.SplitN(cmd, "\n", 2)
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid global command format")
+	}
+	pattern := parts[0]
+	subCmd := parts[1]
+
+	// Compile the regular expression pattern
+	rx, err := regexp.Compile(pattern)
+	if err != nil {
+		return fmt.Errorf("invalid pattern: %v", err)
+	}
+
+	// Get the lines to apply the command to
+	var r [2]int
+	if r, e = buffer.AddrRangeOrLine(ctx.addrs); e != nil {
+		return
+	}
+	lines, e := buffer.Get(r)
+	if e != nil {
+		return
+	}
+
+	// Apply the command to each matching line
+	for i, line := range lines {
+		if rx.MatchString(line) {
+			newCtx := &Context{
+				cmd:       subCmd,
+				cmdOffset: 0,
+				addrs:     []int{r[0] + i},
+				out:       ctx.out,
+			}
+			if exe, ok := cmds[subCmd[0]]; ok {
+				buffer.Start()
+				if e = exe(newCtx); e != nil {
+					return
+				}
+				buffer.End()
+			} else {
+				return fmt.Errorf("invalid command: %v", subCmd[0])
+			}
+		}
+	}
+	return
+}
+
+// Implementation of the 'v' and 'V' commands
+func cmdInvertGlobal(ctx *Context) (e error) {
+	cmd := ctx.cmd[ctx.cmdOffset+1:]
+	if len(cmd) == 0 {
+		return fmt.Errorf("invalid invert global command")
+	}
+
+	// Split the command into pattern and command parts
+	parts := strings.SplitN(cmd, "\n", 2)
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid invert global command format")
+	}
+	pattern := parts[0]
+	subCmd := parts[1]
+
+	// Compile the regular expression pattern
+	rx, err := regexp.Compile(pattern)
+	if err != nil {
+		return fmt.Errorf("invalid pattern: %v", err)
+	}
+
+	// Get the lines to apply the command to
+	var r [2]int
+	if r, e = buffer.AddrRangeOrLine(ctx.addrs); e != nil {
+		return
+	}
+	lines, e := buffer.Get(r)
+	if e != nil {
+		return
+	}
+
+	// Apply the command to each non-matching line
+	for i, line := range lines {
+		if !rx.MatchString(line) {
+			newCtx := &Context{
+				cmd:       subCmd,
+				cmdOffset: 0,
+				addrs:     []int{r[0] + i},
+				out:       ctx.out,
+			}
+			if exe, ok := cmds[subCmd[0]]; ok {
+				buffer.Start()
+				if e = exe(newCtx); e != nil {
+					return
+				}
+				buffer.End()
+			} else {
+				return fmt.Errorf("invalid command: %v", subCmd[0])
+			}
+		}
+	}
+	return
+}
+
+// Initialize the cmds map after defining the command handlers
+func initCmds() {
+	cmds = map[byte]Command{
+		'q': cmdQuit,
+		'Q': cmdQuit,
+		'd': cmdDelete,
+		'l': cmdPrint,
+		'p': cmdPrint,
+		'n': cmdPrint,
+		'h': cmdErr,
+		'H': cmdErr,
+		'a': cmdInput,
+		'i': cmdInput,
+		'c': cmdInput,
+		'w': cmdWrite,
+		'W': cmdWrite,
+		'k': cmdMark,
+		'e': cmdEdit,
+		'E': cmdEdit,
+		'r': cmdEdit,
+		'f': cmdFile,
+		'=': cmdLine,
+		'j': cmdJoin,
+		'm': cmdMove,
+		't': cmdMove,
+		'y': cmdCopy,
+		'x': cmdPaste,
+		'P': cmdPrompt,
+		's': cmdSub,
+		'u': cmdUndo,
+		'D': cmdDump, // var dump the buffer for debug
+		'z': cmdScroll,
+		'!': cmdCommand,
+		'_': cmdSyntaxHighlighting,
+		'#': func(*Context) (e error) { return },
+		'g': cmdGlobal,
+		'G': cmdGlobal,
+		'v': cmdInvertGlobal,
+		'V': cmdInvertGlobal,
+	}
 }
