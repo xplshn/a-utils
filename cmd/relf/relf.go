@@ -196,7 +196,7 @@ func main() {
 		Authors:     []string{"xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "Prints section sizes of ELF files",
-		Synopsis:    "relf [-tree -s] <elf-file>",
+		Synopsis:    "[-t -s] <elf-file>",
 		CustomFields: map[string]interface{}{
 			"1_Examples": `Print section sizes in human-readable format:
   \$ relf -s file.elf`,
@@ -215,7 +215,7 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() < 1 {
-		fmt.Fprintln(os.Stderr, "Usage: relf [options] <elf-file>")
+		fmt.Print(helpPage)
 		os.Exit(1)
 	}
 
