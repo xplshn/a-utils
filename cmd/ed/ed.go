@@ -15,8 +15,9 @@
 // - Implmented commands: !, #, =, E, H, P, Q, W, a, c, d, e, f, h, i, j, k, l, m, n, p, q, r, s, t, u, w, x, y, z
 // - Syntax highlighting: _
 //
+// * Not exensively tested commands: g, G, v, V
+//
 // The following has *not* yet been implemented, but will be eventually:
-// - Unimplemented commands: g, G, v, V
 // - does not (yet) support "loose" mode
 // - does not (yet) support "restricted" mode
 package main
