@@ -9,13 +9,20 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 const Prefix = "walk: "
 
-// Constants and global variables
+type directory struct {
+	Name  string
+	Files []os.DirEntry
+	Level int64
+}
+
 var (
 	MaxConcurrency     = 1024 * 16
 	goroutineSemaphore = make(chan struct{}, MaxConcurrency)
@@ -27,36 +34,54 @@ var run struct {
 	print      func(string)
 }
 
-type Directory struct {
-	Name  string
-	Files []os.DirEntry
-	Level int64
-}
-
 var (
 	visitedMap  = make(map[string]bool)
 	rwlock      sync.RWMutex
 	visitedFunc = markVisited
 )
 
-// isDirectory checks if the given path is a directory
-func isDirectory(path string) bool {
-	info, err := os.Stat(path)
+type FileInfo struct {
+	Path       string
+	IsDir      bool
+	IsSymlink  bool
+}
+
+func isdirectory(path string) bool {
+	FileInfo, err := gatherFileInfo(path)
 	if err != nil {
 		printError(err)
 		return false
 	}
-	return info.IsDir()
+	return FileInfo.IsDir
 }
 
-// isNotDirectory checks if the given path is not a directory
-func isNotDirectory(path string) bool {
-	return !isDirectory(path)
+func isNotdirectory(path string) bool {
+	return !isdirectory(path)
 }
 
-// isNotHidden checks if the given path is not a hidden file or directory
+// isHidden checks if the given path has any hidden directories or if the filename itself is hidden.
+func isHidden(path string) bool {
+	// Split the path into components
+	components := strings.Split(path, "/")
+
+	// Extract filename and check if it is hidden
+	filename := components[len(components)-1] // Last component is the filename
+	if strings.HasPrefix(filename, ".") {
+		return true // Filename is hidden
+	}
+
+	// Check if any component (directory) is hidden
+	for _, component := range components {
+		if strings.HasPrefix(component, ".") {
+			return true // Found a hidden directory
+		}
+	}
+
+	return false // No hidden directories or filename found
+}
+
 func isNotHidden(path string) bool {
-	return !strings.HasPrefix(filepath.Base(path), ".")
+	return !isHidden(path)
 }
 
 // markVisited marks a file as visited
@@ -98,20 +123,20 @@ func printAbsoluteFile(path string) bool {
 
 func main() {
 	// Options
-	printAbsolute := flag.Bool("a", false, "Print absolute paths")
+	printRelative := flag.Bool("r", false, "Print relative paths")
 	noRelativePrefix := flag.Bool("nr", false, "Don't print ./ in relative paths")
 	traversalLimit := flag.Int64("t", 1024*1024*1024, "Traversal depth limit")
 	// Conditions
 	printDirectories := flag.Bool("d", false, "Print directories only")
 	printFiles := flag.Bool("f", false, "Print files only")
-	hideHidden := flag.Bool("x", false, "Hide hidden files")
+	showAll := flag.Bool("a", false, `Show paths that contain a directory or file prepended with '.'`)
 
 	cmdInfo := &ccmd.CmdInfo{
 		Name:        "walk",
 		Authors:     []string{"as", "xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "traverse a list of targets (directories or files)",
-		Synopsis:    "<|-a|-nr|-t [INT]|> <|-d|-f|-x|> [target ...]", // FIX -x
+		Synopsis:    "<|-a|-nr|-t [INT]|> <|-d|-f|-x|-A|-a|> [target ...]", // FIX -x
 	}
 	helpPage, err := cmdInfo.GenerateHelpPage()
 	if err != nil {
@@ -129,26 +154,23 @@ func main() {
 	}
 
 	run.traverse = depthFirstTraversal
+	if !*showAll {
+		run.conditions = append(run.conditions, isNotHidden)
+	}
 	if *printDirectories {
-		run.conditions = append(run.conditions, isDirectory)
+		run.conditions = append(run.conditions, isdirectory)
 	}
 	if *printFiles {
-		run.conditions = append(run.conditions, isNotDirectory)
-	}
-	if *hideHidden {
-		run.conditions = append(run.conditions, isNotHidden)
+		run.conditions = append(run.conditions, isNotdirectory)
 	}
 
 	paths := flag.Args()
+	// Default to current directory if no paths are specified
 	if len(paths) == 0 {
 		paths = []string{"."}
 	}
 
-	if *printAbsolute {
-		run.print = func(path string) {
-			printAbsoluteFile(path)
-		}
-	} else {
+	if *printRelative {
 		run.print = func(path string) {
 			for _, condition := range run.conditions {
 				if !condition(path) {
@@ -159,6 +181,10 @@ func main() {
 				path = "./" + path
 			}
 			fmt.Println(path)
+		}
+	} else {
+		run.print = func(path string) {
+			printAbsoluteFile(path)
 		}
 	}
 
@@ -198,7 +224,7 @@ func depthFirstTraversal(root string, fn func(string), maxDepth int64) {
 // depthFirstTraversalHelper assists in depth-first traversal, enforcing depth limit
 func depthFirstTraversalHelper(path string, wg *sync.WaitGroup, depth int64, listch chan<- string, maxDepth int64) {
 	defer wg.Done()
-	dir := getDirectory(path, depth)
+	dir := getdirectory(path, depth)
 	if dir == nil || depth > maxDepth {
 		return
 	}
@@ -215,14 +241,14 @@ func depthFirstTraversalHelper(path string, wg *sync.WaitGroup, depth int64, lis
 	}
 }
 
-// getDirectory reads the directory and returns its contents
-func getDirectory(path string, level int64) *Directory {
+// getdirectory reads the directory and returns its contents
+func getdirectory(path string, level int64) *directory {
 	files, err := os.ReadDir(path)
 	if err != nil || files == nil {
 		printError(err)
 		return nil
 	}
-	return &Directory{Name: path, Files: files, Level: level}
+	return &directory{Name: path, Files: files, Level: level}
 }
 
 // println prints a message with the prefix
@@ -235,4 +261,9 @@ func println(v ...interface{}) {
 func printError(v ...interface{}) {
 	fmt.Fprint(os.Stderr, Prefix)
 	fmt.Fprintln(os.Stderr, v...)
+}
+
+// timespecToTime converts syscall.Timespec to time.Time
+func timespecToTime(ts syscall.Timespec) time.Time {
+	return time.Unix(int64(ts.Sec), int64(ts.Nsec))
 }
