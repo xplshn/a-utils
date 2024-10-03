@@ -1,25 +1,10 @@
-// Copyright 2009-2018 the u-root Authors. All rights reserved
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-// lddfiles prints the arguments and all .so dependencies of those arguments
-//
-// Description:
-//
-//	lddfiles prints the arguments on the command line and all .so's
-//	on which they depend. In some cases, those .so's are actually symlinks;
-//	in that case, the symlink and its value are printed.
-//	lddfiles can be used to package up a command for tranporation to
-//	another machine, e.g.
-//	scp `lddfiles /usr/bin/*` remotehost:/
-//	will let you copy all of /usr/bin, and all needed libraries. to a remote
-//	host.
-//	lddfiles /usr/bin/* | cpio -H newc -o > /tmp/x.cpio
-//	lets you easily prepare cpio archives, which can be included in a kernel
-//	or similarly scp'ed to another machine.
+// Copyright 2009-2018 the u-root Authors               [3BSD]
+// Copyright 2024 xplshn
+// For more details refer to https://github.com/xplshn/a-utils
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -27,10 +12,37 @@ import (
 	"path/filepath"
 
 	"github.com/u-root/u-root/pkg/ldd"
+	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 func main() {
-	if err := run(os.Stdout, os.Args[1:]); err != nil {
+	// Setup CCMD library for help and command information
+	cmdInfo := &ccmd.CmdInfo{
+		Authors:     []string{"u-root", "xplshn"},
+		Repository:  "https://github.com/xplshn/a-utils",
+		Name:        "lddfiles",
+		Synopsis:    "[FILE/s]",
+		Description: "Display all dynamic dependencies of the provided files using the  u-root ldd package.",
+	}
+
+	helpPage, err := cmdInfo.GenerateHelpPage()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error generating help page: %v\n", err)
+		return
+	}
+
+	flag.Usage = func() { fmt.Print(helpPage) }
+
+	flag.Parse()
+
+	args := flag.Args()
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "No files provided.")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if err := run(os.Stdout, args); err != nil {
 		log.Fatal(err)
 	}
 }
