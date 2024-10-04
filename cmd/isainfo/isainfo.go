@@ -14,7 +14,7 @@ import (
 )
 
 // displayCPUInfo prints CPU info based on the selected options.
-func displayCPUInfo(showBits, showInstSet, showFlags, showVendor, showCores, showMhz bool) {
+func displayCPUInfo(showBits, showInstSet, showFlags, showVendor, showCores, showMhz, showISAVersion bool) {
 	cpuInfo, err := cpu.Info()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error retrieving CPU info: %v\n", err)
@@ -59,11 +59,48 @@ func displayCPUInfo(showBits, showInstSet, showFlags, showVendor, showCores, sho
 	if showMhz {
 		fmt.Printf("MHz: %.2f\n", info.Mhz)
 	}
+
+	if showISAVersion {
+		isaVersion := determineISAVersion(info.Flags)
+		fmt.Printf("ISA Version: %s\n", isaVersion)
+	}
+}
+
+// determineISAVersion checks the CPU flags and returns the ISA version.
+func determineISAVersion(flags []string) string {
+	flagSet := make(map[string]bool)
+	for _, flag := range flags {
+		flagSet[flag] = true
+	}
+
+	if hasFlags(flagSet, "avx512f", "avx512bw", "avx512cd", "avx512dq", "avx512vl") {
+		return "x86-64-v4"
+	}
+	if hasFlags(flagSet, "avx", "avx2", "bmi1", "bmi2", "f16c", "fma", "abm", "movbe", "xsave") {
+		return "x86-64-v3"
+	}
+	if hasFlags(flagSet, "cx16", "lahf_lm", "popcnt", "sse4_1", "sse4_2", "ssse3") {
+		return "x86-64-v2"
+	}
+	if hasFlags(flagSet, "lm", "cmov", "cx8", "fpu", "fxsr", "mmx", "syscall", "sse2") {
+		return "x86-64-v1"
+	}
+	return "unknown"
+}
+
+// hasFlags checks if all the given flags are present in the flag set.
+func hasFlags(flagSet map[string]bool, flags ...string) bool {
+	for _, flag := range flags {
+		if !flagSet[flag] {
+			return false
+		}
+	}
+	return true
 }
 
 // printHelp prints a custom help message for invalid options.
 func printHelp(option string) {
-	fmt.Printf("isainfo: illegal option -%s\nusage: isainfo [-b|-k|-x|-v|-c|-m]\n", option)
+	fmt.Printf("isainfo: illegal option -%s\nusage: isainfo [-b|-k|-x|-v|-c|-m|-i]\n", option)
 }
 
 // main function processes command-line arguments and displays CPU information based on user options.
@@ -74,12 +111,13 @@ func main() {
 	vendorFlag := flag.Bool("v", false, "Print the CPU vendor ID")
 	coresFlag := flag.Bool("c", false, "Print the number of CPU cores")
 	mhzFlag := flag.Bool("m", false, "Print the CPU clock speed (MHz)")
+	isaVersionFlag := flag.Bool("i", false, "Print the ISA version")
 
 	cmdInfo := &ccmd.CmdInfo{
 		Authors:     []string{"xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Name:        "isainfo",
-		Synopsis:    "<|-b|-k|-x|-v|-c|-m|>",
+		Synopsis:    "<|-b|-k|-x|-v|-c|-m|-iv|>",
 		Description: "Prints detailed CPU architecture and flags.",
 	}
 
@@ -93,11 +131,11 @@ func main() {
 	flag.Parse()
 
 	// If no flags are provided, print usage
-	if !*bitsFlag && !*instSetFlag && !*flagsFlag && !*vendorFlag && !*coresFlag && !*mhzFlag {
+	if !*bitsFlag && !*instSetFlag && !*flagsFlag && !*vendorFlag && !*coresFlag && !*mhzFlag && !*isaVersionFlag {
 		flag.Usage()
 		os.Exit(0)
 	}
 
 	// Display the CPU information based on flags
-	displayCPUInfo(*bitsFlag, *instSetFlag, *flagsFlag, *vendorFlag, *coresFlag, *mhzFlag)
+	displayCPUInfo(*bitsFlag, *instSetFlag, *flagsFlag, *vendorFlag, *coresFlag, *mhzFlag, *isaVersionFlag)
 }
