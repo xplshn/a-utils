@@ -78,6 +78,8 @@ clean_project() {
     log "Starting clean process"
     unnappear rm ./noroot-do
     echo "rm ./noroot-do"
+    unnappear rm ./bwrap
+    echo "rm ./bwrap"
     log "Clean process completed"
 }
 
