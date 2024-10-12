@@ -49,12 +49,14 @@ build_commands() {
                 if [ -d "$dir" ]; then
                     # Check for .go files in the current directory
                     if find "$dir" -maxdepth 1 -type f -name '*.go' -print -quit | grep -q .; then
-                        log "Building Go projects in \"$dir\" and placing in $LOCAL_BUILT_DIR"
-                        (cd "$dir" && GOBIN="$LOCAL_BUILT_DIR" go install .)
+                        if [ ! -f "$dir/cbuild.sh" ]; then
+                            log "Building Go projects in \"$dir\" and placing in $LOCAL_BUILT_DIR"
+                            (cd "$dir" && GOBIN="$LOCAL_BUILT_DIR" go install .)
+                        fi
                     fi
                     # Check for cbuild.sh in the current directory
                     if [ -f "$dir/cbuild.sh" ]; then
-                        log "Building C project in $dir"
+                        log "Building project with in $dir"
                         (cd "$dir" && ./cbuild.sh)
                     fi
                 elif [ "$main_dir" != "" ]; then

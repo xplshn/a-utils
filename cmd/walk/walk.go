@@ -124,7 +124,6 @@ func printAbsoluteFile(path string) bool {
 func main() {
 	// Options
 	printRelative := flag.Bool("r", false, "Print relative paths")
-	noRelativePrefix := flag.Bool("nr", false, "Don't print ./ in relative paths")
 	traversalLimit := flag.Int64("t", 1024*1024*1024, "Traversal depth limit")
 	// Conditions
 	printDirectories := flag.Bool("d", false, "Print directories only")
@@ -176,9 +175,6 @@ func main() {
 				if !condition(path) {
 					return
 				}
-			}
-			if !*noRelativePrefix && !strings.HasPrefix(path, "./") && !strings.HasPrefix(path, "../") {
-				path = "./" + path
 			}
 			fmt.Println(path)
 		}
