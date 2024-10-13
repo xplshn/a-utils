@@ -17,7 +17,8 @@
 # Go workspace file
 go.work
 
-# Hidden file
+# Hidden files
+a-utils
 .*p*
 .*
 built/
