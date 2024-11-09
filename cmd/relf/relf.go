@@ -192,11 +192,11 @@ func main() {
 	humanReadableFlag := flag.Bool("s", false, "Show sizes in human-readable format")
 
 	cmdInfo := &ccmd.CmdInfo{
-		Name:        "relf",
 		Authors:     []string{"xplshn"},
-		Repository:  "https://github.com/xplshn/a-utils",
+		Name:        "relf",
+		Synopsis:    "<|-t|-s|> <elf-file>",
 		Description: "Prints section sizes of ELF files",
-		Synopsis:    "[-t -s] <elf-file>",
+		Repository:  "https://github.com/xplshn/a-utils",
 		CustomFields: map[string]interface{}{
 			"1_Examples": `Print section sizes in human-readable format:
   \$ relf -s file.elf`,

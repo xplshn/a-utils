@@ -55,7 +55,7 @@ download_bwrap() {
 
 build_project() {
     ROOT="--uid 0 --gid 0"
-    SANDBOX="--unshare-all --share-net --ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/hostname /etc/hostname --ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/passwd /etc/passwd --ro-bind-try /etc/group /etc/group --ro-bind-try /etc/hosts /etc/hosts --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf"
+    SANDBOX="--unshare-all --proc /proc --share-net --ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/hostname /etc/hostname --ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/passwd /etc/passwd --ro-bind-try /etc/group /etc/group --ro-bind-try /etc/hosts /etc/hosts --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf"
     RSANDBOX="--share-net --proc /proc --dev-bind /dev /dev --bind /run /run --bind /tmp /tmp --ro-bind-try /usr/share/fonts /usr/share/fonts --ro-bind-try /usr/share/themes /usr/share/themes --ro-bind-try /sys /sys --ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/hosts /etc/hosts --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf --ro-bind-try /etc/passwd /etc/passwd --ro-bind-try /etc/group /etc/group --ro-bind-try /etc/machine-id /etc/machine-id --ro-bind-try /etc/asound.conf /etc/asound.conf --ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/hostname /etc/hostname --ro-bind-try /usr/share/fontconfig /usr/share/fontconfig"
     DESKTOP="--share-net --proc /proc --dev-bind /dev /dev --bind /run /run --bind /home /home --bind /tmp /tmp --bind-try /media /media --bind-try /mnt /mnt --bind-try /opt /opt --ro-bind-try /usr/share/fonts /usr/share/fonts --ro-bind-try /usr/share/themes /usr/share/themes --ro-bind-try /sys /sys --ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/hosts /etc/hosts --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf --ro-bind-try /etc/passwd /etc/passwd --ro-bind-try /etc/group /etc/group --ro-bind-try /etc/machine-id /etc/machine-id --ro-bind-try /etc/asound.conf /etc/asound.conf --ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/hostname /etc/hostname --ro-bind-try /usr/share/fontconfig /usr/share/fontconfig"
     go build || log_error "Go build failed"
@@ -68,11 +68,11 @@ build_project() {
     unnappear ./noroot-do --sediment rootsandbox && log 'Sedimented "rootsandbox" preset'
     # RELAXED SANDBOX
     log 'Creating "relaxedSandbox" preset'
-    unnappear ./noroot-do --set-mode-flags sandbox:"$RSANDBOX"
-    unnappear ./noroot-do --sediment sandbox && log 'Sedimented "relaxedSandbox" preset'
+    unnappear ./noroot-do --set-mode-flags relaxedSandbox:"$RSANDBOX"
+    unnappear ./noroot-do --sediment relaxedSandbox && log 'Sedimented "relaxedSandbox" preset'
     log 'Creating "rootRelaxedSandbox" preset'
-    unnappear ./noroot-do --set-mode-flags rootsandbox:"$RSANDBOX $ROOT"
-    unnappear ./noroot-do --sediment rootsandbox && log 'Sedimented "rootRelaxedSandbox" preset'
+    unnappear ./noroot-do --set-mode-flags rootRelaxedSandbox:"$RSANDBOX $ROOT"
+    unnappear ./noroot-do --sediment rootRelaxedSandbox && log 'Sedimented "rootRelaxedSandbox" preset'
     # DESKTOP
     log 'Creating "desktop" preset'
     unnappear ./noroot-do --set-mode-flags desktop:"$DESKTOP"
