@@ -18,7 +18,7 @@ func main() {
 		Authors:     []string{"xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "Substitutes environment variables in shell format strings",
-		Synopsis:    "[|VARIABLEs|]",
+		Synopsis:    "[SHELL_FORMAT]",
 		CustomFields: map[string]interface{}{
 			"1_Behavior": "By default, reads stdin and substitutes environment variables.",
 			"2_Examples":  `  \$ echo 'Hello $USER' | envsubst`,
