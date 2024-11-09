@@ -53,10 +53,22 @@ I am very much against bloat, but I enjoy challenges, which translates into me i
 15. `listen`, listens and announces on a network port, ported from Torgo
 16. `dial`, dials a network endpoint, ported from Torgo
 17. `relf`, a program that shows you the sections of an ELF file and can also guess what the unknown "sections" contain
-18. `demo`, just a demo of the `ccmd` pkg/library
+18. `isainfo`, like the SunOS command, it will show info about your architecture, capabilities, bits, etc.
+19. `envsubst`, works like the built-in that many shells have. https://manned.org/man/alpine/envsubst
+20. `importenv`, lets you access variables defined in the namespace/scope of another process
+22. `noroot-do`, lets you `chroot` into a `rootfs` without root, it comes with various default presets of options, for different levels of sandboxing, etc, you can see those using the `--info` flag and you can also create/redifine your own `modes` :) (note: It doesn't create any external files, this program saves its config/options WITHIN itself, without rewritting itself, it uses XATTR arguments and a bit of magick)
+23. `ntpdate` will simply update your HW clock based on `NTP`
+24. `demo`, just a demo of the `ccmd` pkg/library
 
 #### Contributions
 I am looking for contributors, in fact. I NEED THEM. This is an ambicious project. And if you wish to contribute, please do! By openning a PR here to add a POSIX compliant utility that you've implemented, or bringing up to my attention bugs in our programs.
 
 ### Note on Building
 A-Utils utilizes build.sh for building utilities. This script checks for cbuild.sh in cloned repositories listed in extendC.b and executes them accordingly. For Go binaries, extendGo.b serves a similar purpose but doesn't require cbuild.sh. By default, ./build.sh builds utilities in the local ./cmd folder but can be adapted for other projects. To build a single-file binary, you'll need: https://github.com/xplshn/a-utils_gobusybox
+
+##### TODO:
+- Publish my `grep` implementation
+- Make `ccmd` be more useful and work like a replacement for the `"flag"` package, but with similar syntax. (as opposed to other alternatives which SUCK/are completely invasive)
+- We need a package manager suite. One shall be developed, parting from an specification, and providing at least the following: a command used to create packages, and a command used to install, uninstall and get to KNOW available packages in a remote or local repository
+- Transparently NETWORK everything
+- Create a library for Go that works like overlayfs & uses fuse, but for use with the "embed" package.
