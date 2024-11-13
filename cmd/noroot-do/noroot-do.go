@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -11,199 +12,217 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/xattr"
-	"github.com/xplshn/a-utils/pkg/ccmd"
+	"github.com/maja42/ember"
+	"github.com/maja42/ember/embedding"
 )
 
 //go:embed bwrap
 var embeddedBwrap embed.FS
 
-const (
-	xattrKeyRootFS      = "user.SetRootfs"
-	xattrKeyBwrapToggle = "user.UseEmbeddedBwrap"
-	xattrKeyModeFlags   = "user.ModeFlags"
-	xattrKeySediment    = "user.Sediment"
-)
+// Configuration stores all the program settings
+type Configuration struct {
+	RootFS        string            `json:"rootfs"`
+	UseEmbedded   bool              `json:"use_embedded_bwrap"`
+	ModeFlags     map[string]string `json:"mode_flags"`
+	SedimentModes map[string]bool   `json:"sediment_modes"`
+}
 
-// Save the root filesystem path using xattr on the executable itself (os.Args[0])
-func saveRootFSConfig(path string) error {
-	executable, err := os.Executable()
-	if err != nil {
-		return fmt.Errorf("failed to determine current executable: %v", err)
+// Global configuration
+var config Configuration
+
+// Initialize default configuration
+func initDefaultConfig() Configuration {
+	return Configuration{
+		RootFS:        "",
+		UseEmbedded:   false,
+		ModeFlags:     make(map[string]string),
+		SedimentModes: make(map[string]bool),
 	}
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return fmt.Errorf("failed to determine absolute path of rootfs: %v", err)
+}
+
+// Load configuration from embedded data
+func loadConfig() error {
+	attachments, err := ember.Open()
+	if err == nil {
+		defer attachments.Close()
+
+		contents := attachments.List()
+		hasConfig := false
+		for _, name := range contents {
+			if name == "config.json" {
+				hasConfig = true
+				break
+			}
+		}
+
+		if hasConfig {
+			r := attachments.Reader("config.json")
+			data, err := io.ReadAll(r)
+			if err != nil {
+				return fmt.Errorf("failed to read config: %v", err)
+			}
+			if err := json.Unmarshal(data, &config); err != nil {
+				return fmt.Errorf("failed to parse config: %v", err)
+			}
+			return nil
+		}
 	}
-	if err := xattr.Set(executable, xattrKeyRootFS, []byte(absPath)); err != nil {
-		return fmt.Errorf("failed to set xattr for rootfs: %v", err)
-	}
+	// If no config exists, initialize defaults
+	config = initDefaultConfig()
 	return nil
 }
 
-// Load the root filesystem path from xattr
-func loadRootFSConfig() (string, error) {
-	executable, err := os.Executable()
+func saveConfig() error {
+	// Marshal the current config
+	data, err := json.Marshal(config)
 	if err != nil {
-		return "", fmt.Errorf("failed to determine current executable: %v", err)
+		return fmt.Errorf("failed to marshal config: %v", err)
 	}
-	rootfs, err := xattr.Get(executable, xattrKeyRootFS)
-	if err != nil {
-		return "", fmt.Errorf("failed to get xattr for rootfs: %v", err)
-	}
-	return string(rootfs), nil
-}
 
-// Remove the root filesystem xattr
-func removeRootFSConfig() error {
+	// Get the path to the current executable
 	executable, err := os.Executable()
 	if err != nil {
-		return fmt.Errorf("failed to determine current executable: %v", err)
+		return fmt.Errorf("failed to get executable path: %v", err)
 	}
-	return xattr.Remove(executable, xattrKeyRootFS)
-}
 
-// Save bwrap toggle using xattr
-func saveBwrapToggle(useEmbedded bool) error {
-	executable, err := os.Executable()
+	// Create a backup of the current executable first
+	backupPath := executable + ".backup"
+	if err := copyFile(executable, backupPath); err != nil {
+		return fmt.Errorf("failed to create backup: %v", err)
+	}
+
+	// Create all temporary files in the same directory as the executable
+	// This ensures atomic rename operations work across filesystems
+	execDir := filepath.Dir(executable)
+
+	// Create a temporary file for the config
+	configTempFile, err := os.CreateTemp(execDir, "config-*.json")
 	if err != nil {
-		return fmt.Errorf("failed to determine current executable: %v", err)
+		return fmt.Errorf("failed to create temp config file: %v", err)
 	}
-	value := "0"
-	if useEmbedded {
-		value = "1"
+	defer os.Remove(configTempFile.Name())
+
+	// Write the config data to the temporary file
+	if err := os.WriteFile(configTempFile.Name(), data, 0644); err != nil {
+		return fmt.Errorf("failed to write temp config: %v", err)
 	}
-	if err := xattr.Set(executable, xattrKeyBwrapToggle, []byte(value)); err != nil {
-		return fmt.Errorf("failed to set xattr for bwrap toggle: %v", err)
+
+	// Create a temporary file for the new executable
+	newExePath := executable + ".new"
+	newExe, err := os.OpenFile(newExePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+	if err != nil {
+		os.Remove(backupPath)
+		return fmt.Errorf("failed to create new executable file: %v", err)
 	}
+	defer newExe.Close()
+	defer os.Remove(newExePath) // Clean up in case of failure
+
+	// Open the backup file as source
+	sourceExe, err := os.Open(backupPath)
+	if err != nil {
+		os.Remove(backupPath)
+		return fmt.Errorf("failed to open backup: %v", err)
+	}
+	defer sourceExe.Close()
+
+	// Setup logging function
+	logger := func(format string, args ...interface{}) {
+		fmt.Printf("\t"+format+"\n", args...)
+	}
+
+	// Create a temporary file for the cleaned executable
+	cleanedExePath := executable + ".cleaned"
+	cleanedExe, err := os.OpenFile(cleanedExePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+	if err != nil {
+		os.Remove(backupPath)
+		return fmt.Errorf("failed to create cleaned executable file: %v", err)
+	}
+	defer cleanedExe.Close()
+	defer os.Remove(cleanedExePath)
+
+	// Try to remove existing embedding, but don't fail if there isn't any
+	err = embedding.RemoveEmbedding(cleanedExe, sourceExe, logger)
+	if err != nil && !strings.Contains(err.Error(), "contains no embedded data") {
+		os.Remove(backupPath)
+		return fmt.Errorf("failed to remove existing embedding: %v", err)
+	}
+
+	// Determine which file to use as source
+	var embedSource string
+	if err == nil {
+		embedSource = cleanedExePath
+	} else {
+		embedSource = backupPath
+	}
+
+	// Open the source file for embedding
+	embedSourceFile, err := os.Open(embedSource)
+	if err != nil {
+		os.Remove(backupPath)
+		return fmt.Errorf("failed to open source for embedding: %v", err)
+	}
+	defer embedSourceFile.Close()
+
+	// Define attachments for the new config
+	attachments := map[string]string{
+		"config.json": configTempFile.Name(),
+	}
+
+	// Create the new executable with the embedded config
+	if err := embedding.EmbedFiles(newExe, embedSourceFile, attachments, logger); err != nil {
+		os.Remove(backupPath)
+		return fmt.Errorf("failed to embed new config: %v", err)
+	}
+
+	// Close all files before attempting rename
+	newExe.Close()
+	embedSourceFile.Close()
+	cleanedExe.Close()
+
+	// Atomic replacement of the executable
+	if err := os.Rename(newExePath, executable); err != nil {
+		// If rename fails, restore from backup
+		if restoreErr := os.Rename(backupPath, executable); restoreErr != nil {
+			return fmt.Errorf("failed to update executable and restore backup: %v (original error: %v)", restoreErr, err)
+		}
+		return fmt.Errorf("failed to update executable (restored from backup): %v", err)
+	}
+
+	// Remove the backup file only after successful update
+	os.Remove(backupPath)
+
 	return nil
-}
-
-// Load bwrap toggle from xattr
-func loadBwrapToggle() (bool, error) {
-	executable, err := os.Executable()
-	if err != nil {
-		return false, fmt.Errorf("failed to determine current executable: %v", err)
-	}
-	value, err := xattr.Get(executable, xattrKeyBwrapToggle)
-	if err != nil {
-		return false, nil // default to system bwrap if no xattr set
-	}
-	return string(value) == "1", nil
-}
-
-// Check if the root filesystem is set by checking the xattr
-func checkRootFSSet() bool {
-	executable, err := os.Executable()
-	if err != nil {
-		log.Fatalf("Failed to determine current executable: %v", err)
-	}
-	_, err = xattr.Get(executable, xattrKeyRootFS)
-	return err == nil
-}
-
-// Check if the embedded bwrap should be used
-func checkUseEmbeddedBwrap() bool {
-	useEmbedded, err := loadBwrapToggle()
-	if err != nil {
-		log.Printf("Error loading bwrap toggle: %v, using system bwrap by default", err)
-		return false
-	}
-	return useEmbedded
-}
-
-// Save mode flags using xattr
-func saveModeFlags(mode string, flags string) error {
-	executable, err := os.Executable()
-	if err != nil {
-		return fmt.Errorf("failed to determine current executable: %v", err)
-	}
-	if err := xattr.Set(executable, fmt.Sprintf("%s.%s", xattrKeyModeFlags, mode), []byte(flags)); err != nil {
-		return fmt.Errorf("failed to set xattr for mode flags: %v", err)
-	}
-	return nil
-}
-
-// Load mode flags from xattr
-func loadModeFlags(mode string) (string, error) {
-	executable, err := os.Executable()
-	if err != nil {
-		return "", fmt.Errorf("failed to determine current executable: %v", err)
-	}
-	flags, err := xattr.Get(executable, fmt.Sprintf("%s.%s", xattrKeyModeFlags, mode))
-	if err != nil {
-		return "", fmt.Errorf("failed to get xattr for mode flags: %v", err)
-	}
-	return string(flags), nil
-}
-
-// Remove mode flags using xattr
-func removeModeFlags(mode string) error {
-	executable, err := os.Executable()
-	if err != nil {
-		return fmt.Errorf("failed to determine current executable: %v", err)
-	}
-	return xattr.Remove(executable, fmt.Sprintf("%s.%s", xattrKeyModeFlags, mode))
-}
-
-// Save sediment flag using xattr
-func saveSedimentFlag(mode string) error {
-	executable, err := os.Executable()
-	if err != nil {
-		return fmt.Errorf("failed to determine current executable: %v", err)
-	}
-	if err := xattr.Set(executable, fmt.Sprintf("%s.%s", xattrKeySediment, mode), []byte("1")); err != nil {
-		return fmt.Errorf("failed to set xattr for sediment flag: %v", err)
-	}
-	return nil
-}
-
-// Check if a mode is sediment (RO)
-func isSediment(mode string) (bool, error) {
-	executable, err := os.Executable()
-	if err != nil {
-		return false, fmt.Errorf("failed to determine current executable: %v", err)
-	}
-	value, err := xattr.Get(executable, fmt.Sprintf("%s.%s", xattrKeySediment, mode))
-	if err != nil {
-		return false, nil // default to not sediment if no xattr set
-	}
-	return string(value) == "1", nil
 }
 
 // Run a command inside the chroot environment using bwrap
-func runBwrapCommand(rootfs string, mode string, args []string) error {
+func runBwrapCommand(args []string, mode string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("no command provided to run inside the chroot")
 	}
 
 	bwrapCmd := "bwrap"
 
-	if checkUseEmbeddedBwrap() {
+	if config.UseEmbedded {
 		tmpFile, err := os.CreateTemp("", "bwrap-embedded-*")
 		if err != nil {
 			return fmt.Errorf("failed to create temp file for embedded bwrap: %v", err)
 		}
 		defer os.Remove(tmpFile.Name())
 
-		// Open the embedded bwrap binary from the filesystem
 		bwrapBinary, err := embeddedBwrap.Open("bwrap")
 		if err != nil {
 			return fmt.Errorf("failed to open embedded bwrap binary: %v", err)
 		}
 		defer bwrapBinary.Close()
 
-		// Copy the content of the embedded bwrap binary to the temporary file
 		if _, err := io.Copy(tmpFile, bwrapBinary); err != nil {
 			return fmt.Errorf("failed to write embedded bwrap to temp file: %v", err)
 		}
 
-		// Close the file after writing to it
 		if err := tmpFile.Close(); err != nil {
 			return fmt.Errorf("failed to close temp file: %v", err)
 		}
 
-		// Change the permissions of the file using the file name
 		if err := os.Chmod(tmpFile.Name(), 0755); err != nil {
 			return fmt.Errorf("failed to make temp bwrap executable: %v", err)
 		}
@@ -211,28 +230,15 @@ func runBwrapCommand(rootfs string, mode string, args []string) error {
 		bwrapCmd = tmpFile.Name()
 	}
 
-	// Prepare the bwrap command with default arguments
 	bwrapArgs := []string{
-		"--bind", rootfs, "/", // Mount the rootfs as '/'
-		//"--unshare-all",       // Prevents affecting the host system
-		//"--share-net",                                       // Let the rootfs have network access
-		//"--ro-bind-try", "/etc/localtime", "/etc/localtime", // Share local timezone to be used
-		//"--ro-bind-try", "/etc/hostname", "/etc/hostname", // Teach the rootfs what its surname is
-		//"--ro-bind-try", "/etc/resolv.conf", "/etc/resolv.conf", // Guide the rootfs towards its first networked steps
-		//"--ro-bind-try", "/etc/passwd", "/etc/passwd", // Teach it about its elders & family
-		//"--ro-bind-try", "/etc/group", "/etc/group", // Teach it about the importance of social roles
-		//"--ro-bind-try", "/etc/hosts", "/etc/hosts", // Make it befriend the local & remote neighbours
-		//"--ro-bind-try", "/etc/nsswitch.conf", "/etc/nsswitch.conf", // No comments, forgot what this file is
+		"--bind", config.RootFS, "/",
 	}
 
-	// Add mode-specific arguments
-	modeFlags, err := loadModeFlags(mode)
-	if err != nil {
-		return fmt.Errorf("failed to load mode flags: %v", err)
+	// Add mode-specific flags
+	if flags, ok := config.ModeFlags[mode]; ok {
+		bwrapArgs = append(bwrapArgs, strings.Split(flags, " ")...)
 	}
-	bwrapArgs = append(bwrapArgs, strings.Split(modeFlags, " ")...)
 
-	// Append user-supplied arguments (command and its options)
 	bwrapArgs = append(bwrapArgs, "--")
 	bwrapArgs = append(bwrapArgs, args...)
 
@@ -244,83 +250,52 @@ func runBwrapCommand(rootfs string, mode string, args []string) error {
 	return cmd.Run()
 }
 
+// Command handlers
 func cmdSet(rootfs string) {
 	absRootfs, err := filepath.Abs(rootfs)
 	if err != nil {
 		log.Fatalf("Error determining absolute path: %v", err)
 	}
-	if err := saveRootFSConfig(absRootfs); err != nil {
-		log.Fatalf("Error saving rootfs config: %v", err)
+	config.RootFS = absRootfs
+	if err := saveConfig(); err != nil {
+		log.Fatalf("Error saving config: %v", err)
 	}
 	fmt.Printf("Root filesystem set to: %s\n", absRootfs)
 }
 
 func cmdUnset() {
-	if !checkRootFSSet() {
+	if config.RootFS == "" {
 		log.Fatalf("No rootfs is currently set.")
 	}
-	if err := removeRootFSConfig(); err != nil {
-		log.Fatalf("Error removing rootfs config: %v", err)
+	config.RootFS = ""
+	if err := saveConfig(); err != nil {
+		log.Fatalf("Error saving config: %v", err)
 	}
 	fmt.Println("Root filesystem unset successfully.")
 }
 
 func cmdInfo() {
-	if !checkRootFSSet() {
-		fmt.Println("rootfs: unset")
-	}
-	rootfs, err := loadRootFSConfig()
-	if err != nil {
-		log.Fatalf("Error loading rootfs config: %v", err)
-	}
-	fmt.Printf("rootfs: %s\n", rootfs)
-
-	useEmbedded := checkUseEmbeddedBwrap()
-	if useEmbedded {
+	fmt.Printf("rootfs: %s\n", config.RootFS)
+	if config.UseEmbedded {
 		fmt.Println("bwrap: embedded")
 	} else {
 		fmt.Println("bwrap: system")
 	}
 
-	executable, err := os.Executable()
-	if err != nil {
-		log.Fatalf("Failed to determine current executable: %v", err)
-		return
-	}
-
-	modes, err := xattr.List(executable)
-	if err != nil {
-		log.Fatalf("Failed to list xattrs: %v", err)
-	}
-
-	for _, mode := range modes {
-		if strings.HasPrefix(mode, xattrKeyModeFlags+".") {
-			modeName := strings.TrimPrefix(mode, xattrKeyModeFlags+".")
-			flags, err := loadModeFlags(modeName)
-			if err != nil {
-				log.Printf("Error loading flags for mode %s: %v", modeName, err)
-				continue
-			}
-			fmt.Printf("Mode: \x1b[94m%s\x1b[0m, Flags: %s\n", modeName, flags)
-
-			isSediment, err := isSediment(modeName)
-			if err != nil {
-				log.Printf("Error checking sediment for mode %s: %v", modeName, err)
-				continue
-			}
-			if isSediment {
-				fmt.Printf("Mode %s is read-only (sedimented).\n", modeName)
-			}
+	for mode, flags := range config.ModeFlags {
+		fmt.Printf("Mode: \x1b[94m%s\x1b[0m, Flags: %s\n", mode, flags)
+		if config.SedimentModes[mode] {
+			fmt.Printf("Mode %s is read-only (sedimented).\n", mode)
 		}
 	}
 }
 
 func cmdToggleEmbeddedBwrap() {
-	useEmbedded := checkUseEmbeddedBwrap()
-	if err := saveBwrapToggle(!useEmbedded); err != nil {
-		log.Fatalf("Error toggling embedded bwrap: %v", err)
+	config.UseEmbedded = !config.UseEmbedded
+	if err := saveConfig(); err != nil {
+		log.Fatalf("Error saving config: %v", err)
 	}
-	if !useEmbedded {
+	if config.UseEmbedded {
 		fmt.Println("Now using embedded bwrap.")
 	} else {
 		fmt.Println("Now using system bwrap.")
@@ -328,62 +303,53 @@ func cmdToggleEmbeddedBwrap() {
 }
 
 func cmdRun(mode string, args []string) {
-	if !checkRootFSSet() {
+	if config.RootFS == "" {
 		log.Fatalf("No rootfs is currently set.")
 	}
-
-	rootfs, err := loadRootFSConfig()
-	if err != nil {
-		log.Fatalf("Error loading rootfs config: %v", err)
-	}
-
-	err = runBwrapCommand(rootfs, mode, args)
-	if err != nil {
+	if err := runBwrapCommand(args, mode); err != nil {
 		log.Fatalf("Error running command in chroot: %v", err)
 	}
 }
 
 func cmdSetModeFlags(mode string, flags string) {
-	isSediment, err := isSediment(mode)
-	if err != nil {
-		log.Fatalf("Error checking sediment for mode %s: %v", mode, err)
-	}
-	if isSediment {
+	if config.SedimentModes[mode] {
 		log.Fatalf("Mode %s is read-only (sedimented) and cannot be modified.", mode)
 	}
-	if err := saveModeFlags(mode, flags); err != nil {
-		log.Fatalf("Error saving mode flags: %v", err)
+	config.ModeFlags[mode] = flags
+	if err := saveConfig(); err != nil {
+		log.Fatalf("Error saving config: %v", err)
 	}
-	if err == nil {
-		fmt.Printf("Successfully configured mode \"%s\"\n", mode)
-	} else {
-		fmt.Printf("%v", err)
-	}
+	fmt.Printf("Successfully configured mode \"%s\"\n", mode)
 }
 
 func cmdRemoveMode(mode string) {
-	isSediment, err := isSediment(mode)
-	if err != nil {
-		log.Fatalf("Error checking sediment for mode %s: %v", mode, err)
-	}
-	if isSediment {
+	if config.SedimentModes[mode] {
 		log.Fatalf("Mode %s is read-only (sedimented) and cannot be removed.", mode)
 	}
-
-	if err := removeModeFlags(mode); err != nil {
-		log.Fatalf("Error removing mode %s: %v", mode, err)
+	delete(config.ModeFlags, mode)
+	delete(config.SedimentModes, mode)
+	if err := saveConfig(); err != nil {
+		log.Fatalf("Error saving config: %v", err)
 	}
 	fmt.Printf("Mode %s removed successfully.\n", mode)
 }
 
 func cmdSetSediment(mode string) {
-	if err := saveSedimentFlag(mode); err != nil {
-		log.Fatalf("Error setting sediment flag for mode %s: %v", mode, err)
+	if _, exists := config.ModeFlags[mode]; !exists {
+		log.Fatalf("Mode %s does not exist.", mode)
+	}
+	config.SedimentModes[mode] = true
+	if err := saveConfig(); err != nil {
+		log.Fatalf("Error saving config: %v", err)
 	}
 	fmt.Printf("Mode %s set to read-only (sedimented).\n", mode)
 }
 
 func main() {
+	if err := loadConfig(); err != nil {
+		log.Fatalf("Error loading configuration: %v", err)
+	}
+
 	setFlag := flag.String("set", "", "Set the root filesystem")
 	unsetFlag := flag.Bool("unset", false, "Unset the root filesystem")
 	infoFlag := flag.Bool("info", false, "Show information about the root filesystem")
@@ -392,54 +358,68 @@ func main() {
 	setModeFlagsFlag := flag.String("set-mode-flags", "", "Set flags for a specific mode (e.g., --set-mode-flags mode:\"flags\")")
 	removeModeFlag := flag.String("remove-mode", "", "Remove a specific mode")
 	setSedimentFlag := flag.String("sediment", "", "Set a mode to read-only (sediment)")
-	help := &ccmd.CmdInfo{
-		Name:        "noroot-do",
-		Authors:     []string{"xplshn"},
-		Repository:  "https://github.com/xplshn/a-utils",
-		Description: "Interacts with a rootfs or container via leveraging bwrap",
-		Synopsis:    "<|--set [ROOTFS_DIR]|--unset|--info|--mode [MODE] [CMD]|--toggle-embedded-bwrap|--set-mode-flags [name:\"--flag1 ...\"|--remove-mode [MODE]]|>",
-		ExcludeFlags: map[string]bool{
-			"sediment": true,
-		},
-		//CustomFields: map[string]interface{}{
-		//	"1_Behavior": "Behavior is not set",
-		//},
-	}
-
-	helpPage, err := help.GenerateHelpPage()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error generating help page:", err)
-		os.Exit(1)
-	}
-	flag.Usage = func() {
-		fmt.Print(helpPage)
-	}
 
 	flag.Parse()
 	args := flag.Args()
 
-	if *setFlag != "" {
+	switch {
+	case *setFlag != "":
 		cmdSet(*setFlag)
-	} else if *unsetFlag {
+	case *unsetFlag:
 		cmdUnset()
-	} else if *infoFlag {
+	case *infoFlag:
 		cmdInfo()
-	} else if *toggleEmbeddedFlag {
+	case *toggleEmbeddedFlag:
 		cmdToggleEmbeddedBwrap()
-	} else if *modeFlag != "" {
+	case *modeFlag != "":
 		cmdRun(*modeFlag, args)
-	} else if *setModeFlagsFlag != "" {
+	case *setModeFlagsFlag != "":
 		parts := strings.SplitN(*setModeFlagsFlag, ":", 2)
 		if len(parts) != 2 {
 			log.Fatalf("Invalid format for --set-mode-flags. Use --set-mode-flags modeName:\"flags to be passed to bwrap\"")
 		}
 		cmdSetModeFlags(parts[0], parts[1])
-	} else if *removeModeFlag != "" {
+	case *removeModeFlag != "":
 		cmdRemoveMode(*removeModeFlag)
-	} else if *setSedimentFlag != "" {
+	case *setSedimentFlag != "":
 		cmdSetSediment(*setSedimentFlag)
-	} else {
+	default:
 		flag.Usage()
-        return
 	}
+}
+
+// copyFile copies a file from src to dst. If dst already exists, it will be overwritten.
+func copyFile(src, dst string) error {
+	// Open source file
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("failed to open source file: %v", err)
+	}
+	defer sourceFile.Close()
+
+	// Create destination file
+	destFile, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("failed to create destination file: %v", err)
+	}
+	defer destFile.Close()
+
+	// Copy contents from source to destination
+	_, err = io.Copy(destFile, sourceFile)
+	if err != nil {
+		return fmt.Errorf("failed to copy file contents: %v", err)
+	}
+
+	// Set permissions on the destination file (same as source)
+	sourceFileInfo, err := sourceFile.Stat()
+	if err != nil {
+		return fmt.Errorf("failed to get source file info: %v", err)
+	}
+	err = os.Chmod(dst, sourceFileInfo.Mode())
+	if err != nil {
+		return fmt.Errorf("failed to set destination file permissions: %v", err)
+	}
+
+	// Return success
+	return nil
 }
