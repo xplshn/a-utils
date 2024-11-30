@@ -307,7 +307,11 @@ func cmdRun(mode string, args []string) {
 		log.Fatalf("No rootfs is currently set.")
 	}
 	if err := runBwrapCommand(args, mode); err != nil {
-		log.Fatalf("Error running command in chroot: %v", err)
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			os.Exit(exitErr.ExitCode())
+		}
+		// I hope this is unreachable code, if it isn't, something has gone terribly wrong
+		os.Exit(1)
 	}
 }
 

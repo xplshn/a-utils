@@ -5,34 +5,17 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
-	"syscall"
-	"time"
 
+	"github.com/charlievieth/fastwalk"
 	"github.com/xplshn/a-utils/pkg/ccmd"
 )
 
 const Prefix = "walk: "
-
-type directory struct {
-	Name  string
-	Files []os.DirEntry
-	Level int64
-}
-
-var (
-	MaxConcurrency     = 1024 * 16
-	goroutineSemaphore = make(chan struct{}, MaxConcurrency)
-)
-
-var run struct {
-	traverse   func(string, func(string), int64)
-	conditions []func(string) bool
-	print      func(string)
-}
 
 var (
 	visitedMap  = make(map[string]bool)
@@ -41,9 +24,9 @@ var (
 )
 
 type FileInfo struct {
-	Path       string
-	IsDir      bool
-	IsSymlink  bool
+	Path      string
+	IsDir     bool
+	IsSymlink bool
 }
 
 func isdirectory(path string) bool {
@@ -59,32 +42,24 @@ func isNotdirectory(path string) bool {
 	return !isdirectory(path)
 }
 
-// isHidden checks if the given path has any hidden directories or if the filename itself is hidden.
 func isHidden(path string) bool {
-	// Split the path into components
 	components := strings.Split(path, "/")
-
-	// Extract filename and check if it is hidden
-	filename := components[len(components)-1] // Last component is the filename
+	filename := components[len(components)-1]
 	if strings.HasPrefix(filename, ".") {
-		return true // Filename is hidden
+		return true
 	}
-
-	// Check if any component (directory) is hidden
 	for _, component := range components {
 		if strings.HasPrefix(component, ".") {
-			return true // Found a hidden directory
+			return true
 		}
 	}
-
-	return false // No hidden directories or filename found
+	return false
 }
 
 func isNotHidden(path string) bool {
 	return !isHidden(path)
 }
 
-// markVisited marks a file as visited
 func markVisited(path string) (alreadyVisited bool) {
 	rwlock.RLock()
 	_, alreadyVisited = visitedMap[path]
@@ -98,9 +73,8 @@ func markVisited(path string) (alreadyVisited bool) {
 	return
 }
 
-// printFile prints the file path if it meets all conditions
-func printFile(path string) {
-	for _, condition := range run.conditions {
+func printFile(path string, conditions []func(string) bool) {
+	for _, condition := range conditions {
 		if !condition(path) {
 			return
 		}
@@ -108,8 +82,7 @@ func printFile(path string) {
 	fmt.Println(path)
 }
 
-// printAbsoluteFile prints the absolute path of the file if it meets all conditions
-func printAbsoluteFile(path string) bool {
+func printAbsoluteFile(path string, conditions []func(string) bool) bool {
 	var err error
 	if !filepath.IsAbs(path) {
 		if path, err = filepath.Abs(path); err != nil {
@@ -117,15 +90,13 @@ func printAbsoluteFile(path string) bool {
 			return false
 		}
 	}
-	printFile(path)
+	printFile(path, conditions)
 	return true
 }
 
 func main() {
-	// Options
 	printRelative := flag.Bool("r", false, "Print relative paths")
 	traversalLimit := flag.Int64("t", 1024*1024*1024, "Traversal depth limit")
-	// Conditions
 	printDirectories := flag.Bool("d", false, "Print directories only")
 	printFiles := flag.Bool("f", false, "Print files only")
 	showAll := flag.Bool("a", false, `Show paths that contain a directory or file prepended with '.'`)
@@ -135,7 +106,7 @@ func main() {
 		Authors:     []string{"as", "xplshn"},
 		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "traverse a list of targets (directories or files)",
-		Synopsis:    "<|-a|-nr|-t [INT]|> <|-d|-f|-x|-A|-a|> [target ...]", // FIX -x
+		Synopsis:    "<|-a|-nr|-t [INT]|> <|-d|-f|-x|-A|-a|> [target ...]",
 	}
 	helpPage, err := cmdInfo.GenerateHelpPage()
 	if err != nil {
@@ -152,49 +123,92 @@ func main() {
 		os.Exit(1)
 	}
 
-	run.traverse = depthFirstTraversal
+	var conditions []func(string) bool
 	if !*showAll {
-		run.conditions = append(run.conditions, isNotHidden)
+		conditions = append(conditions, isNotHidden)
 	}
 	if *printDirectories {
-		run.conditions = append(run.conditions, isdirectory)
+		conditions = append(conditions, isdirectory)
 	}
 	if *printFiles {
-		run.conditions = append(run.conditions, isNotdirectory)
+		conditions = append(conditions, isNotdirectory)
 	}
 
 	paths := flag.Args()
-	// Default to current directory if no paths are specified
 	if len(paths) == 0 {
 		paths = []string{"."}
 	}
 
-	if *printRelative {
-		run.print = func(path string) {
-			for _, condition := range run.conditions {
-				if !condition(path) {
-					return
-				}
-			}
-			fmt.Println(path)
-		}
-	} else {
-		run.print = func(path string) {
-			printAbsoluteFile(path)
-		}
-	}
-
 	var wg sync.WaitGroup
+	var visitedCount int64
+	var visitedLock sync.Mutex
+
 	for _, target := range paths {
 		wg.Add(1)
 		go func(target string) {
 			defer wg.Done()
 			if target != "-" {
-				run.traverse(target, run.print, *traversalLimit)
+				walkFn := func(path string, d fs.DirEntry, err error) error {
+					if err != nil {
+						fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
+						return nil
+					}
+					if visitedFunc(path) {
+						return nil
+					}
+					visitedLock.Lock()
+					if visitedCount >= *traversalLimit {
+						visitedLock.Unlock()
+						return fs.SkipAll
+					}
+					visitedCount++
+					visitedLock.Unlock()
+					if *printRelative {
+						printFile(path, conditions)
+					} else {
+						printAbsoluteFile(path, conditions)
+					}
+					return nil
+				}
+				conf := fastwalk.Config{
+					Follow: false,
+				}
+				if err := fastwalk.Walk(&conf, target, walkFn); err != nil {
+					fmt.Fprintf(os.Stderr, "%s: %v\n", target, err)
+					os.Exit(1)
+				}
 			} else {
 				in := bufio.NewScanner(os.Stdin)
 				for in.Scan() {
-					run.traverse(in.Text(), run.print, *traversalLimit)
+					walkFn := func(path string, d fs.DirEntry, err error) error {
+						if err != nil {
+							fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
+							return nil
+						}
+						if visitedFunc(path) {
+							return nil
+						}
+						visitedLock.Lock()
+						if visitedCount >= *traversalLimit {
+							visitedLock.Unlock()
+							return fs.SkipAll
+						}
+						visitedCount++
+						visitedLock.Unlock()
+						if *printRelative {
+							printFile(path, conditions)
+						} else {
+							printAbsoluteFile(path, conditions)
+						}
+						return nil
+					}
+					conf := fastwalk.Config{
+						Follow: false,
+					}
+					if err := fastwalk.Walk(&conf, in.Text(), walkFn); err != nil {
+						fmt.Fprintf(os.Stderr, "%s: %v\n", in.Text(), err)
+						os.Exit(1)
+					}
 				}
 			}
 		}(target)
@@ -202,64 +216,12 @@ func main() {
 	wg.Wait()
 }
 
-// depthFirstTraversal performs a depth-first traversal of the directory tree
-func depthFirstTraversal(root string, fn func(string), maxDepth int64) {
-	listChannel := make(chan string, MaxConcurrency)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go depthFirstTraversalHelper(root, &wg, 0, listChannel, maxDepth)
-	go func() {
-		wg.Wait()
-		close(listChannel)
-	}()
-	for path := range listChannel {
-		run.print(path)
-	}
-}
-
-// depthFirstTraversalHelper assists in depth-first traversal, enforcing depth limit
-func depthFirstTraversalHelper(path string, wg *sync.WaitGroup, depth int64, listch chan<- string, maxDepth int64) {
-	defer wg.Done()
-	dir := getdirectory(path, depth)
-	if dir == nil || depth > maxDepth {
-		return
-	}
-	for _, file := range dir.Files {
-		childPath := filepath.Join(dir.Name, file.Name())
-		if visitedFunc(childPath) {
-			continue
-		}
-		if file.IsDir() && depth < maxDepth {
-			wg.Add(1)
-			go depthFirstTraversalHelper(childPath, wg, depth+1, listch, maxDepth)
-		}
-		listch <- childPath
-	}
-}
-
-// getdirectory reads the directory and returns its contents
-func getdirectory(path string, level int64) *directory {
-	files, err := os.ReadDir(path)
-	if err != nil || files == nil {
-		printError(err)
-		return nil
-	}
-	return &directory{Name: path, Files: files, Level: level}
-}
-
-// println prints a message with the prefix
 func println(v ...interface{}) {
 	fmt.Print(Prefix)
 	fmt.Println(v...)
 }
 
-// printError prints an error message with the prefix
 func printError(v ...interface{}) {
 	fmt.Fprint(os.Stderr, Prefix)
 	fmt.Fprintln(os.Stderr, v...)
-}
-
-// timespecToTime converts syscall.Timespec to time.Time
-func timespecToTime(ts syscall.Timespec) time.Time {
-	return time.Unix(int64(ts.Sec), int64(ts.Nsec))
 }

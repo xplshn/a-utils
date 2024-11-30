@@ -4,8 +4,10 @@ go 1.22.5
 
 require (
 	github.com/alecthomas/chroma/v2 v2.14.0
+	github.com/charlievieth/fastwalk v1.0.9
 	github.com/google/go-cmp v0.6.0
 	github.com/liamg/tml v0.7.0
+	github.com/maja42/ember v1.2.2
 	github.com/pkg/xattr v0.4.10
 	github.com/shirou/gopsutil/v4 v4.24.10
 	github.com/tklauser/go-sysconf v0.3.14
