@@ -7,12 +7,12 @@ require (
 	github.com/charlievieth/fastwalk v1.0.9
 	github.com/google/go-cmp v0.6.0
 	github.com/liamg/tml v0.7.0
-	github.com/maja42/ember v1.2.2
-	github.com/pkg/xattr v0.4.10
-	github.com/shirou/gopsutil/v4 v4.24.10
+	github.com/maja42/ember v1.3.0
+	github.com/shirou/gopsutil/v4 v4.24.11
 	github.com/tklauser/go-sysconf v0.3.14
 	github.com/u-root/u-root v0.14.0
-	golang.org/x/sys v0.27.0
+	golang.org/x/sys v0.28.0
+	golang.org/x/term v0.27.0
 )
 
 require (
@@ -24,5 +24,5 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/tklauser/numcpus v0.9.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	golang.org/x/net v0.31.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 )

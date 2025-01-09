@@ -7,11 +7,25 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"golang.org/x/term"
 )
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "usage: %s format [arg ...]\n", os.Args[0])
 	os.Exit(1)
+}
+
+// GetTerminalWidth attempts to determine the width of the terminal.
+// if failed, it will falls back to  80 columns.
+func getTerminalWidth() int {
+	w, _, _ := term.GetSize(int(os.Stdout.Fd()))
+	if w != 0 {
+		return w
+	}
+
+	// Fallback to  80 columns
+	return 80
 }
 
 func printf(format string, args []string) (string, error) {
@@ -120,6 +134,25 @@ func printf(format string, args []string) (string, error) {
 				if precision >= 0 && precision < len(s) {
 					s = s[:precision]
 				}
+				if width > 0 {
+					output.WriteString(fmt.Sprintf(fmt.Sprintf("%%%ds", width), s))
+				} else {
+					output.WriteString(s)
+				}
+				argi++
+			} else {
+				output.WriteString("")
+			}
+		case 'z':
+			indicator := "...>"
+			if argi < len(args) {
+				s := args[argi]
+				availableSpace := getTerminalWidth() - len(indicator)
+		
+				if availableSpace > 0 && len(s) > availableSpace {
+					s = s[:availableSpace] + indicator
+				}
+		
 				if width > 0 {
 					output.WriteString(fmt.Sprintf(fmt.Sprintf("%%%ds", width), s))
 				} else {

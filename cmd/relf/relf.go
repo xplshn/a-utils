@@ -114,7 +114,7 @@ func printSectionSizes(file *elf.File, filePath string, fileSize uint64, refinem
 
 	if totalSize < fileSize {
 		unknownSize := fileSize - totalSize
-		sectionName := "!unknown"
+		sectionName := "unknown"
 		for _, refinement := range refinements {
 			if refinement.SectionCheck != nil && refinement.SectionCheck(file) {
 				sectionName = refinement.Name

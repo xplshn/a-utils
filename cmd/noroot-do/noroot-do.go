@@ -231,7 +231,7 @@ func runBwrapCommand(args []string, mode string) error {
 	}
 
 	bwrapArgs := []string{
-		"--bind", config.RootFS, "/",
+		"--dev-bind-try", config.RootFS, "/",
 	}
 
 	// Add mode-specific flags
@@ -306,6 +306,12 @@ func cmdRun(mode string, args []string) {
 	if config.RootFS == "" {
 		log.Fatalf("No rootfs is currently set.")
 	}
+	if _, ok := config.ModeFlags[mode]; !ok {
+		log.Fatalf("Mode [%s] does not exist.", mode)
+	}
+	if len(args) == 0 {
+		log.Fatalf("No command provided to run inside the chroot.")
+	}
 	if err := runBwrapCommand(args, mode); err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			os.Exit(exitErr.ExitCode())
@@ -340,13 +346,38 @@ func cmdRemoveMode(mode string) {
 
 func cmdSetSediment(mode string) {
 	if _, exists := config.ModeFlags[mode]; !exists {
-		log.Fatalf("Mode %s does not exist.", mode)
+		log.Fatalf("Mode [%s] does not exist.", mode)
 	}
 	config.SedimentModes[mode] = true
 	if err := saveConfig(); err != nil {
 		log.Fatalf("Error saving config: %v", err)
 	}
 	fmt.Printf("Mode %s set to read-only (sedimented).\n", mode)
+}
+
+func cmdDumpConfig(filePath string) {
+	data, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		log.Fatalf("Error marshalling config: %v", err)
+	}
+	if err := os.WriteFile(filePath, data, 0644); err != nil {
+		log.Fatalf("Error writing config to file: %v", err)
+	}
+	fmt.Printf("Config dumped to: %s\n", filePath)
+}
+
+func cmdLoadConfig(filePath string) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Fatalf("Error reading config file: %v", err)
+	}
+	if err := json.Unmarshal(data, &config); err != nil {
+		log.Fatalf("Error unmarshalling config: %v", err)
+	}
+	if err := saveConfig(); err != nil {
+		log.Fatalf("Error saving config: %v", err)
+	}
+	fmt.Printf("Config loaded from: %s\n", filePath)
 }
 
 func main() {
@@ -362,6 +393,8 @@ func main() {
 	setModeFlagsFlag := flag.String("set-mode-flags", "", "Set flags for a specific mode (e.g., --set-mode-flags mode:\"flags\")")
 	removeModeFlag := flag.String("remove-mode", "", "Remove a specific mode")
 	setSedimentFlag := flag.String("sediment", "", "Set a mode to read-only (sediment)")
+	dumpConfigFlag := flag.String("dump-config", "", "Dump the current config to a file")
+	loadConfigFlag := flag.String("load-config", "", "Load config from a file")
 
 	flag.Parse()
 	args := flag.Args()
@@ -376,6 +409,9 @@ func main() {
 	case *toggleEmbeddedFlag:
 		cmdToggleEmbeddedBwrap()
 	case *modeFlag != "":
+		if *modeFlag == "" {
+			log.Fatalf("--mode is obligatory")
+		}
 		cmdRun(*modeFlag, args)
 	case *setModeFlagsFlag != "":
 		parts := strings.SplitN(*setModeFlagsFlag, ":", 2)
@@ -387,6 +423,10 @@ func main() {
 		cmdRemoveMode(*removeModeFlag)
 	case *setSedimentFlag != "":
 		cmdSetSediment(*setSedimentFlag)
+	case *dumpConfigFlag != "":
+		cmdDumpConfig(*dumpConfigFlag)
+	case *loadConfigFlag != "":
+		cmdLoadConfig(*loadConfigFlag)
 	default:
 		flag.Usage()
 	}

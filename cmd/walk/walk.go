@@ -95,18 +95,18 @@ func printAbsoluteFile(path string, conditions []func(string) bool) bool {
 }
 
 func main() {
-	printRelative := flag.Bool("r", false, "Print relative paths")
 	traversalLimit := flag.Int64("t", 1024*1024*1024, "Traversal depth limit")
 	printDirectories := flag.Bool("d", false, "Print directories only")
 	printFiles := flag.Bool("f", false, "Print files only")
+	printAbsolute := flag.Bool("A", false, "Print absolute paths")
 	showAll := flag.Bool("a", false, `Show paths that contain a directory or file prepended with '.'`)
 
 	cmdInfo := &ccmd.CmdInfo{
 		Name:        "walk",
-		Authors:     []string{"as", "xplshn"},
+		Authors:     []string{"as", "xplshn"}, // Should his name ("as") be here? This is nothing like the original, not anymore.
 		Repository:  "https://github.com/xplshn/a-utils",
 		Description: "traverse a list of targets (directories or files)",
-		Synopsis:    "<|-a|-nr|-t [INT]|> <|-d|-f|-x|-A|-a|> [target ...]",
+		Synopsis:    "<|-t [INT]|-d|-f|-A|-a|> [target ...]",
 	}
 	helpPage, err := cmdInfo.GenerateHelpPage()
 	if err != nil {
@@ -163,10 +163,10 @@ func main() {
 					}
 					visitedCount++
 					visitedLock.Unlock()
-					if *printRelative {
-						printFile(path, conditions)
-					} else {
+					if *printAbsolute {
 						printAbsoluteFile(path, conditions)
+					} else {
+						printFile(path, conditions)
 					}
 					return nil
 				}
@@ -195,10 +195,10 @@ func main() {
 						}
 						visitedCount++
 						visitedLock.Unlock()
-						if *printRelative {
-							printFile(path, conditions)
-						} else {
+						if *printAbsolute {
 							printAbsoluteFile(path, conditions)
+						} else {
+							printFile(path, conditions)
 						}
 						return nil
 					}

@@ -47,7 +47,7 @@ require() {
 
 download_bwrap() {
     log "Downloading bwrap"
-    if ! wget -qO "./bwrap" "https://bin.ajam.dev/$(uname -m)/bwrap"; then
+    if ! wget -qO "./bwrap" "https://bin.pkgforge.dev/$(uname -m)/bwrap-patched"; then
         log_error "Unable to download bwrap"
     fi
     chmod +x "./bwrap"
@@ -57,15 +57,15 @@ build_project() {
     ROOT="--uid 0 --gid 0"
     SANDBOX="--unshare-all --proc /proc --share-net --ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/hostname /etc/hostname --ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/passwd /etc/passwd --ro-bind-try /etc/group /etc/group --ro-bind-try /etc/hosts /etc/hosts --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf --bind-try /home /home"
     RSANDBOX="--share-net --proc /proc --dev-bind /dev /dev --bind /run /run --bind /tmp /tmp --ro-bind-try /usr/share/fonts /usr/share/fonts --ro-bind-try /usr/share/themes /usr/share/themes --ro-bind-try /sys /sys --ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/hosts /etc/hosts --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf --ro-bind-try /etc/passwd /etc/passwd --ro-bind-try /etc/group /etc/group --ro-bind-try /etc/machine-id /etc/machine-id --ro-bind-try /etc/asound.conf /etc/asound.conf --ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/hostname /etc/hostname --ro-bind-try /usr/share/fontconfig /usr/share/fontconfig --bind-try /home /home"
-    DESKTOP="--share-net --proc /proc --dev-bind /dev /dev --bind /run /run --bind /home /home --bind /tmp /tmp --bind-try /media /media --bind-try /mnt /mnt --bind-try /opt /opt --ro-bind-try /usr/share/fonts /usr/share/fonts --ro-bind-try /usr/share/themes /usr/share/themes --ro-bind-try /sys /sys --ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/hosts /etc/hosts --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf --ro-bind-try /etc/passwd /etc/passwd --ro-bind-try /etc/group /etc/group --ro-bind-try /etc/machine-id /etc/machine-id --ro-bind-try /etc/asound.conf /etc/asound.conf --ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/hostname /etc/hostname --ro-bind-try /usr/share/fontconfig /usr/share/fontconfig"
+    DESKTOP="--dev-bind-try / /_ --share-net --proc /proc --dev-bind /dev /dev --bind /run /run --bind /home /home --bind /tmp /tmp --bind-try /media /media --bind-try /mnt /mnt --bind-try /opt /opt --ro-bind-try /usr/share/fonts /usr/share/fonts --ro-bind-try /usr/share/themes /usr/share/themes --ro-bind-try /sys /sys --ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/hosts /etc/hosts --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf --ro-bind-try /etc/passwd /etc/passwd --ro-bind-try /etc/group /etc/group --ro-bind-try /etc/machine-id /etc/machine-id --ro-bind-try /etc/asound.conf /etc/asound.conf --ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/hostname /etc/hostname --ro-bind-try /usr/share/fontconfig /usr/share/fontconfig"
     go build || log_error "Go build failed"
     # SANDBOX
     log 'Creating "sandbox" preset'
     unnappear ./noroot-do --set-mode-flags sandbox:"$SANDBOX"
     unnappear ./noroot-do --sediment sandbox && log 'Sedimented "sandbox" preset'
-    log 'Creating "rootsandbox" preset'
-    unnappear ./noroot-do --set-mode-flags rootsandbox:"$SANDBOX $ROOT"
-    unnappear ./noroot-do --sediment rootsandbox && log 'Sedimented "rootsandbox" preset'
+    log 'Creating "rootSandbox" preset'
+    unnappear ./noroot-do --set-mode-flags rootSandbox:"$SANDBOX $ROOT"
+    unnappear ./noroot-do --sediment rootSandbox && log 'Sedimented "rootSandbox" preset'
     # RELAXED SANDBOX
     log 'Creating "relaxedSandbox" preset'
     unnappear ./noroot-do --set-mode-flags relaxedSandbox:"$RSANDBOX"
@@ -77,9 +77,9 @@ build_project() {
     log 'Creating "desktop" preset'
     unnappear ./noroot-do --set-mode-flags desktop:"$DESKTOP"
     unnappear ./noroot-do --sediment desktop && log 'Sedimented "desktop" preset'
-    log 'Creating "rootdesktop" preset'
-    unnappear ./noroot-do --set-mode-flags rootdesktop:"$DESKTOP $ROOT"
-    unnappear ./noroot-do --sediment rootdesktop && log 'Sedimented "rootdesktop" preset'
+    log 'Creating "rootDesktop" preset'
+    unnappear ./noroot-do --set-mode-flags rootDesktop:"$DESKTOP $ROOT"
+    unnappear ./noroot-do --sediment rootDesktop && log 'Sedimented "rootDesktop" preset'
 }
 
 clean_project() {
@@ -114,3 +114,17 @@ case "$1" in
         exit 1
         ;;
 esac
+
+# --dev-bind-try /System/Devices                 /dev
+# #--dev-bind-try /System/Configuration           /etc
+# --dev-bind-try /Users                          /home
+# --dev-bind-try /System/Filesystems/External    /media
+# --dev-bind-try /System/Filesystems/Internal    /mnt
+# --dev-bind-try /System/Binaries/Optional       /opt
+# #--dev-bind-try /System/Binaries/System         /bin
+# #--dev-bind-try /System/Binaries/Standard       /usr/bind 
+# #--dev-bind-try /System/Binaries/Administrative /usr/sbin 
+# #--dev-bind-try /System/Libraries/System        /lib
+# #--dev-bind-try /System/Libraries/Standard      /usr/lib
+# #--dev-bind-try /System/Shareable               /usr/share
+# --dev-bind-try /System/Variable                /var
