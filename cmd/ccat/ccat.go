@@ -19,6 +19,9 @@ import (
 )
 
 func main() {
+	stylesFlag := flag.Bool("styles", false, "List available styles")
+	styleFile := flag.String("style", "", "Load custom style from file")
+
 	cmdInfo := &ccmd.CmdInfo{
 		Name:        "ccat",
 		Authors:     []string{"xplshn"},
@@ -39,9 +42,6 @@ func main() {
 	flag.Usage = func() {
 		fmt.Print(helpPage)
 	}
-
-	stylesFlag := flag.Bool("styles", false, "List available styles")
-	styleFile := flag.String("style", "", "Load custom style from file")
 	flag.Parse()
 
 	if *stylesFlag {
